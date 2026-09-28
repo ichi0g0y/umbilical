@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Draw the Umbilical icons with no extra libraries.
 
-- src-tauri/icons/source.png : 1024x1024 app icon (feed it to `tauri icon`)
+- src-tauri/icons/source.png : 1024x1024 app icon (feed it to `tauri icon`): an orange
+  ring on a dark rounded square
 - src-tauri/icons/tray.png   : 64x64 black template icon for the tray. It has the
-  same shape as the app icon: a filled rounded square with the glyph cut out.
+  same square as the app icon, with the ring cut out.
 """
 import math
 import struct
@@ -41,6 +42,11 @@ def sd_segment(x, y, ax, ay, bx, by):
     return math.hypot(px - vx * t, py - vy * t)
 
 
+def ring(x, y):
+    """Distance to a ring in the middle, in unit space (-1..1)."""
+    return abs(math.hypot(x, y) - 0.42) - 0.09
+
+
 def glyph(x, y):
     """Distance to the glyph in unit space (-1..1): a ring, a cable and a plug."""
     ring = abs(math.hypot(x, y + 0.08) - 0.42) - 0.075
@@ -51,7 +57,7 @@ def glyph(x, y):
     return min(ring, cable, plug)
 
 
-def draw(size, with_bg, zoom=1.0):
+def draw(size, with_bg, zoom=1.0, shape=glyph):
     """zoom > 1 draws the icon bigger, so the square fills more of the image."""
     px = [0] * (size * size * 4)
     aa = 2.0 / size / zoom
@@ -59,7 +65,7 @@ def draw(size, with_bg, zoom=1.0):
         y = ((j + 0.5) / size * 2 - 1) / zoom
         for i in range(size):
             x = ((i + 0.5) / size * 2 - 1) / zoom
-            g = cover(glyph(x, y), aa)
+            g = cover(shape(x, y), aa)
             k = (j * size + i) * 4
             if with_bg:
                 bg = cover(sd_round_box(x, y, 0.80, 0.22), aa)
@@ -77,6 +83,6 @@ def draw(size, with_bg, zoom=1.0):
 
 
 OUT.mkdir(parents=True, exist_ok=True)
-png(OUT / "source.png", 1024, 1024, draw(1024, True))
-png(OUT / "tray.png", 64, 64, draw(64, False, zoom=1.2))
+png(OUT / "source.png", 1024, 1024, draw(1024, True, shape=ring))
+png(OUT / "tray.png", 64, 64, draw(64, False, zoom=1.2, shape=ring))
 print("wrote", OUT / "source.png", OUT / "tray.png")
