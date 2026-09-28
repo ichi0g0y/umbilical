@@ -19,13 +19,19 @@ Download the latest build from [Releases](https://github.com/ichi0g0y/umbilical/
 - Windows: `Umbilical_<version>_x64-setup.exe`
 - Linux: `Umbilical_<version>_amd64.AppImage` or `.deb`
 
-The builds are **not code signed**, so the OS warns you the first time:
+The builds are **not signed by Apple or Microsoft**, so the OS warns you the first time:
 
 - **macOS**: Gatekeeper blocks the first launch. Right-click the app and choose **Open**, or run
   `xattr -dr com.apple.quarantine /Applications/Umbilical.app`.
 - **Windows**: SmartScreen shows "Windows protected your PC". Click **More info** and then **Run anyway**.
 
 Later updates are downloaded by the app itself, so they should not show these warnings again.
+
+### macOS permissions
+
+Sessions run inside Umbilical, so macOS uses Umbilical's permissions for them (Accessibility, Screen Recording, and so on). Open the **Permissions** tab to see them and allow what your sessions need. Then click **Restart all**.
+
+The macOS builds are signed with our own (self-signed) certificate. It is the same for every version, so macOS keeps the permissions after an update. (Builds before 0.1.2 had no fixed signature. After you update from them, allow the permissions once more.)
 
 ## Before the first start
 

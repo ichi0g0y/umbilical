@@ -4,6 +4,7 @@ const { listen } = window.__TAURI__.event;
 
 const PERMISSION_MODES = ["acceptEdits", "auto", "bypassPermissions", "default", "dontAsk", "plan"];
 const SPAWN_MODES = ["same-dir", "worktree", "session"];
+const VIEWS = ["status", "settings", "permissions", "about"];
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -86,7 +87,7 @@ function fillSelect(el, values, inheritLabel) {
 function showTab(name) {
   tab = name;
   for (const b of document.querySelectorAll(".tab")) b.classList.toggle("active", b.dataset.tab === name);
-  for (const v of ["status", "settings", "about"]) $(`view-${v}`).classList.toggle("hidden", v !== name);
+  for (const v of VIEWS) $(`view-${v}`).classList.toggle("hidden", v !== name);
   if (name === "settings" && !config) loadConfig();
   if (name === "about") loadAbout();
 }
@@ -509,7 +510,7 @@ function enterSetup(on) {
   document.body.classList.toggle("setup-mode", on);
   $("view-setup").classList.toggle("hidden", !on);
   if (on) {
-    for (const v of ["status", "settings", "about"]) $(`view-${v}`).classList.add("hidden");
+    for (const v of VIEWS) $(`view-${v}`).classList.add("hidden");
     renderSetupPreview();
   } else {
     config = null;

@@ -6,6 +6,9 @@
 mod commands;
 mod daemon_ctl;
 mod login;
+mod permissions;
+#[cfg(target_os = "macos")]
+mod permissions_ffi;
 mod presence;
 mod tray;
 mod update;
@@ -94,6 +97,8 @@ pub fn run() {
             commands::get_update,
             commands::check_update,
             commands::install_update,
+            commands::get_permissions,
+            commands::request_permission,
         ])
         .setup(move |app| {
             let show_in =

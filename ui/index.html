@@ -15,6 +15,7 @@
     <nav class="tabs" role="tablist">
       <button class="tab active" data-tab="status" role="tab">Status</button>
       <button class="tab" data-tab="settings" role="tab">Settings</button>
+      <button class="tab hidden" id="tab-permissions" data-tab="permissions" role="tab">Permissions<span id="perm-dot" class="tab-dot hidden"></span></button>
       <button class="tab" data-tab="about" role="tab">About</button>
     </nav>
     <div class="summary">
@@ -265,6 +266,16 @@
   </main>
 
   <!-- About -->
+  <main id="view-permissions" class="view hidden">
+    <div class="settings">
+      <section class="card">
+        <h3>Permissions</h3>
+        <p class="muted">Claude sessions run inside Umbilical, so macOS uses Umbilical's permissions for them. Allow what your sessions need, for example Accessibility and Screen Recording for screen control. After a change, use <b>Restart all</b>, so running sessions get it.</p>
+        <div id="perm-list" class="perm-list"></div>
+      </section>
+    </div>
+  </main>
+
   <main id="view-about" class="view hidden">
     <div class="settings">
       <section class="card">
@@ -294,5 +305,6 @@
   </main>
 
   <script src="app.js"></script>
+  <script src="permissions.js"></script>
 </body>
 </html>

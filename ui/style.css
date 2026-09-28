@@ -67,6 +67,11 @@ code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monosp
 }
 .tab:hover { color: var(--text); }
 .tab.active { background: var(--sel); color: var(--text); font-weight: 600; }
+.tab-dot { display: inline-block; width: 7px; height: 7px; margin-left: 5px; border-radius: 50%; background: var(--bad); vertical-align: 1px; }
+.perm-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.perm { display: flex; align-items: flex-start; gap: 10px; }
+.perm .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex: none; }
+.perm-text { flex: 1; }
 .summary { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 
 .btn {

@@ -4631,6 +4631,10 @@ name = "umbilical"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "block2",
+ "core-foundation 0.10.1",
+ "objc2",
+ "objc2-foundation",
  "semver",
  "serde",
  "serde_json",

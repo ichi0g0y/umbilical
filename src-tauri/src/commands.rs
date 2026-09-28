@@ -139,6 +139,16 @@ pub fn list_subdirs(path: String) -> CmdResult<Vec<String>> {
     Ok(names)
 }
 
+#[tauri::command]
+pub fn get_permissions() -> Vec<crate::permissions::Permission> {
+    crate::permissions::list()
+}
+
+#[tauri::command]
+pub fn request_permission(id: String) -> CmdResult<()> {
+    crate::permissions::request(&id)
+}
+
 /// First start: write the config with the chosen root folder.
 #[tauri::command]
 pub fn complete_setup(
