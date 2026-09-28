@@ -1,0 +1,39 @@
+version: "3"
+
+tasks:
+  dev:
+    desc: "Run the app with hot reload: ui/ reloads in place, Rust changes rebuild and restart. Uses your real ~/.umbilical/config.toml."
+    cmds:
+      # Only one Umbilical can run (single instance), so quit a built copy first.
+      - pkill -TERM -f 'Umbilical.app/Contents/MacOS/umbilical' || true
+      - bun run tauri dev --additional-watch-folders crates/umbilical-core
+
+  check:
+    desc: Run local checks.
+    cmds:
+      - cargo fmt --all -- --check
+      - cargo clippy --workspace --all-targets -- -D warnings
+      - cargo test --workspace
+
+  build:
+    desc: Build the app bundle for this machine (no updater signing).
+    cmds:
+      - bun run tauri build --no-sign {{.CLI_ARGS}}
+
+  icons:
+    desc: Draw the icons again and make every size.
+    cmds:
+      - python3 scripts/make-icons.py
+      - bun run tauri icon src-tauri/icons/source.png -o src-tauri/icons
+      - rm -rf src-tauri/icons/android src-tauri/icons/ios
+
+  release:
+    desc: "Tag and push a stable release. Usage: task release -- 0.1.0"
+    preconditions:
+      - sh: test -n "{{.CLI_ARGS}}"
+        msg: "Give a version: task release -- 0.1.0"
+      - sh: test -z "$(git status --porcelain)"
+        msg: "Commit your changes first."
+    cmds:
+      - git tag -a "v{{.CLI_ARGS}}" -m "v{{.CLI_ARGS}}"
+      - git push origin "v{{.CLI_ARGS}}"

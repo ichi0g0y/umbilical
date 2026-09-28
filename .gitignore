@@ -1,0 +1,6 @@
+/target
+node_modules/
+/src-tauri/gen/
+.DS_Store
+*.key
+src-tauri/tauri.version.json
