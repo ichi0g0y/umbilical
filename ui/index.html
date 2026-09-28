@@ -228,7 +228,9 @@
           <label>Max log size (MB)
             <input id="s-logmax" type="number" min="0" step="1" />
           </label>
+          <label class="check"><input id="s-debug" type="checkbox" /> Debug logging</label>
         </div>
+        <small class="muted">Debug logging writes more detail to <code>umbilical.log</code>, and claude's own debug log to <code>sessions/&lt;folder&gt;.claude-debug.log</code>. Changing it restarts the sessions.</small>
       </section>
 
       <section class="card">

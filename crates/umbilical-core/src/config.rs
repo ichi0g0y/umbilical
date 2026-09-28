@@ -55,6 +55,8 @@ pub struct Config {
     /// Empty means the platform default.
     pub log_dir: String,
     pub log_max_bytes: u64,
+    /// More detail in umbilical.log, and claude's own `--debug-file` per folder.
+    pub debug: bool,
 
     pub autostart: bool,
     pub update: UpdateConfig,
@@ -83,6 +85,7 @@ impl Default for Config {
             stable_reset_secs: 600,
             log_dir: String::new(),
             log_max_bytes: 5 * 1024 * 1024,
+            debug: false,
             autostart: true,
             update: UpdateConfig::default(),
             overrides: BTreeMap::new(),

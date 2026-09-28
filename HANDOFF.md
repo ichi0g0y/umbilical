@@ -56,6 +56,14 @@ Claude Code has no built-in way to keep `remote-control` running (checked `claud
 - Normal start prints "Take this session with you ... Press Ctrl+C to stop." No session URL is printed, so `session_url` stays empty.
 - `open`-ing the app from a shell passes that shell's env to the app.
 
+### Logs (for debugging)
+
+- `~/Library/Logs/Umbilical/umbilical.log`: daemon + GUI log (start, stop, restarts, trust, errors). Rotates at 10 MB.
+- `~/Library/Logs/Umbilical/sessions/<folder>.log`: screen output of each session (TUI redraws removed).
+- `~/Library/Logs/Umbilical/sessions/<folder>.claude-debug.log`: claude's own debug log (`--debug-file`), only when `debug = true`.
+- `~/Library/Logs/Umbilical/login.log`: output of "Log in…".
+- Setting `debug` (default off; **on now on this Mac for development**) adds `[debug]` lines: commands, started command lines, env keys (no values), last output before exit, attention changes, config reloads. Changing it restarts the sessions. claude's debug logs are not rotated by Umbilical yet.
+
 ### Notes
 
 - Right after the daemon is replaced, each session may fail once with `Error: timeout of 15000ms exceeded`, then connect on the next try (5s later). This is fine.

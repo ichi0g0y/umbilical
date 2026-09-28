@@ -222,3 +222,19 @@ fn first_start_waits_for_config() {
     sup.shutdown();
     drop(tmp);
 }
+
+#[test]
+fn debug_adds_claude_debug_file_and_logs() {
+    let (tmp, config_path) = setup(|c| c.debug = true);
+    let sup = Supervisor::start(config_path);
+    let s = wait_for(&sup, "running", |s| {
+        state_of(s, "one") == Some(RunState::Running)
+    });
+    let one = s.dirs.iter().find(|d| d.name == "one").unwrap();
+    let cmd = one.command.clone().unwrap();
+    assert!(cmd.contains("--debug-file"), "{cmd}");
+    assert!(cmd.contains("one.claude-debug.log"), "{cmd}");
+    sup.shutdown();
+    let log = fs::read_to_string(tmp.path().join("logs").join("umbilical.log")).unwrap();
+    assert!(log.contains("[debug] one: started pid"), "{log}");
+}

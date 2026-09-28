@@ -239,6 +239,7 @@ function renderSettings() {
   $("s-stable").value = c.stable_reset_secs;
   $("s-scan").value = c.scan_interval_secs;
   $("s-autostart").checked = c.autostart;
+  $("s-debug").checked = c.debug;
   $("s-logdir").value = c.log_dir;
   $("s-logdir").placeholder = snapshot.log_dir ? `default: ${snapshot.log_dir}` : "default";
   $("s-logmax").value = Math.round(c.log_max_bytes / (1024 * 1024));
@@ -327,6 +328,7 @@ function readSettings() {
   c.stable_reset_secs = parseInt($("s-stable").value, 10) || 0;
   c.scan_interval_secs = parseInt($("s-scan").value, 10) || 5;
   c.autostart = $("s-autostart").checked;
+  c.debug = $("s-debug").checked;
   c.log_dir = $("s-logdir").value.trim();
   c.log_max_bytes = Math.max(0, parseInt($("s-logmax").value, 10) || 0) * 1024 * 1024;
   c.update.channel = $("s-channel").value;

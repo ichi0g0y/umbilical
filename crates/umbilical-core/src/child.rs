@@ -16,6 +16,9 @@ use crate::detect::{Attention, LineSplitter, Signal, scan_line, terminal_replies
 /// How many output lines we keep in memory for each directory.
 pub const TAIL_LINES: usize = 1000;
 
+/// Lines this recent are not written again (TUI redraws).
+const RECENT: usize = 12;
+
 /// Everything needed to start the process. If this changes, we restart it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Spec {
@@ -225,7 +228,9 @@ fn read_loop(
 ) {
     let mut buf = [0u8; 8192];
     let mut splitter = LineSplitter::default();
-    let mut last_line = String::new();
+    // A TUI redraws the same block of lines again and again. Skip a line
+    // if it was one of the last few lines.
+    let mut recent: VecDeque<String> = VecDeque::with_capacity(RECENT);
     let mut last_pending = String::new();
     loop {
         let n = match reader.read(&mut buf) {
@@ -241,11 +246,13 @@ fn read_loop(
             let _ = w.flush();
         }
         for line in splitter.push(chunk) {
-            // A TUI redraws the same text again and again. Keep it once.
-            if line == last_line {
+            if recent.contains(&line) {
                 continue;
             }
-            last_line = line.clone();
+            if recent.len() == RECENT {
+                recent.pop_front();
+            }
+            recent.push_back(line.clone());
             let stamped = format!("{} {line}", now_text());
             log.write_line(&stamped);
             let mut out = output.lock().unwrap();

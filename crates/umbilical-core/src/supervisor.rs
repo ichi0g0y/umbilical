@@ -170,6 +170,7 @@ struct Entry {
     started_unix: Option<u64>,
     manual_stop: bool,
     restarts: u32,
+    last_attention: Option<Attention>,
     last_exit: Option<String>,
     last_error: Option<String>,
 }
@@ -251,6 +252,7 @@ impl Worker {
     }
 
     fn handle(&mut self, cmd: Command) {
+        self.debug(&format!("command: {cmd:?}"));
         match cmd {
             Command::Restart(key) => {
                 if let Some(e) = self.entries.get_mut(&key) {
@@ -340,6 +342,16 @@ impl Worker {
                 self.config = c;
                 self.config_error = None;
                 self.needs_setup = false;
+                self.debug(&format!(
+                    "config: roots={:?} dirs={:?} exclude={:?} spawn={} permission={} auto_trust={} overrides={}",
+                    self.config.roots,
+                    self.config.dirs,
+                    self.config.exclude,
+                    self.config.spawn,
+                    self.config.permission_mode,
+                    self.config.auto_trust,
+                    self.config.overrides.len()
+                ));
             }
             Err(e) => {
                 // Keep the old config. A typo must not stop running sessions.
@@ -396,6 +408,7 @@ impl Worker {
                             started_unix: None,
                             manual_stop: false,
                             restarts: 0,
+                            last_attention: None,
                             last_exit: None,
                             last_error: None,
                         },
@@ -481,6 +494,10 @@ impl Worker {
             .ok_or_else(|| "claude binary not found (set claude_bin in settings)".to_string())?;
         let (program, mut args) = launcher(&bin);
         args.extend(s.args(&e.target.name));
+        if self.config.debug {
+            args.push("--debug-file".into());
+            args.push(self.claude_debug_path(key).to_string_lossy().into_owned());
+        }
         let mut env = s.env.clone();
         env.entry("PATH".into())
             .or_insert_with(|| self.path_var.clone());
@@ -501,6 +518,20 @@ impl Worker {
             let config = &self.config;
             let e = self.entries.get_mut(&key).unwrap();
 
+            let attention = e.output.lock().unwrap().attention;
+            if attention != e.last_attention {
+                if config.debug {
+                    app_log(
+                        &config.log_dir(),
+                        &format!(
+                            "[debug] {}: attention {:?} -> {attention:?}",
+                            e.target.name, e.last_attention
+                        ),
+                    );
+                }
+                e.last_attention = attention;
+            }
+
             // Exited?
             if let Some(p) = &mut e.proc
                 && let Some(exit) = p.try_exit()
@@ -509,6 +540,13 @@ impl Worker {
                 e.proc = None;
                 e.started_unix = None;
                 let tail = e.output.lock().unwrap().tail(3);
+                if config.debug {
+                    let last = e.output.lock().unwrap().tail(8).join(" | ");
+                    app_log(
+                        &config.log_dir(),
+                        &format!("[debug] {}: last output before exit: {last}", e.target.name),
+                    );
+                }
                 e.last_exit = Some(exit.clone());
                 e.last_error = tail.last().cloned();
                 if uptime >= Duration::from_secs(config.stable_reset_secs) {
@@ -543,6 +581,17 @@ impl Worker {
                 Ok(p) => {
                     if e.last_exit.is_some() {
                         e.restarts += 1;
+                    }
+                    if config.debug {
+                        let env_keys: Vec<&str> = p.spec.env.keys().map(String::as_str).collect();
+                        let msg = format!(
+                            "[debug] {}: started pid {:?}: {} (cwd {}, env keys {env_keys:?})",
+                            e.target.name,
+                            p.pid(),
+                            p.spec.display(),
+                            p.spec.cwd.display()
+                        );
+                        app_log(&config.log_dir(), &msg);
                     }
                     e.proc = Some(p);
                     e.started_unix = Some(unix_now());
@@ -644,6 +693,17 @@ impl Worker {
         app_log(&self.config.log_dir(), msg);
     }
 
+    /// Only when `debug = true` in the config.
+    fn debug(&self, msg: &str) {
+        if self.config.debug {
+            self.log(&format!("[debug] {msg}"));
+        }
+    }
+
+    fn claude_debug_path(&self, key: &str) -> PathBuf {
+        self.log_path_for(key).with_extension("claude-debug.log")
+    }
+
     fn shutdown(&mut self) {
         self.log("shutting down, stopping all children");
         let procs: Vec<Proc> = self
@@ -676,11 +736,12 @@ pub fn app_log(log_dir: &Path, msg: &str) {
     let line = format!("{} {msg}", now_text());
     eprintln!("{line}");
     let _ = fs::create_dir_all(log_dir);
-    if let Ok(mut f) = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(log_dir.join("umbilical.log"))
-    {
+    let path = log_dir.join("umbilical.log");
+    // Keep it from growing forever (debug logging writes a lot).
+    if fs::metadata(&path).is_ok_and(|m| m.len() > 10 * 1024 * 1024) {
+        let _ = fs::rename(&path, log_dir.join("umbilical.log.1"));
+    }
+    if let Ok(mut f) = OpenOptions::new().create(true).append(true).open(&path) {
         let _ = writeln!(f, "{line}");
     }
 }
