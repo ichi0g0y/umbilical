@@ -2,7 +2,8 @@
 """Draw the Umbilical icons with no extra libraries.
 
 - src-tauri/icons/source.png : 1024x1024 app icon (feed it to `tauri icon`)
-- src-tauri/icons/tray.png   : 64x64 black template icon for the tray
+- src-tauri/icons/tray.png   : 64x64 black template icon for the tray. It has the
+  same shape as the app icon: a filled rounded square with the glyph cut out.
 """
 import math
 import struct
@@ -50,13 +51,14 @@ def glyph(x, y):
     return min(ring, cable, plug)
 
 
-def draw(size, with_bg):
+def draw(size, with_bg, zoom=1.0):
+    """zoom > 1 draws the icon bigger, so the square fills more of the image."""
     px = [0] * (size * size * 4)
-    aa = 2.0 / size
+    aa = 2.0 / size / zoom
     for j in range(size):
-        y = (j + 0.5) / size * 2 - 1
+        y = ((j + 0.5) / size * 2 - 1) / zoom
         for i in range(size):
-            x = (i + 0.5) / size * 2 - 1
+            x = ((i + 0.5) / size * 2 - 1) / zoom
             g = cover(glyph(x, y), aa)
             k = (j * size + i) * 4
             if with_bg:
@@ -69,11 +71,12 @@ def draw(size, with_bg):
                 rgb = [round(base[c] * (1 - g) + fg[c] * g) for c in range(3)]
                 px[k:k + 4] = rgb + [round(255 * bg)]
             else:
-                px[k:k + 4] = [0, 0, 0, round(255 * g)]
+                bg = cover(sd_round_box(x, y, 0.80, 0.22), aa)
+                px[k:k + 4] = [0, 0, 0, round(255 * bg * (1 - g))]
     return px
 
 
 OUT.mkdir(parents=True, exist_ok=True)
 png(OUT / "source.png", 1024, 1024, draw(1024, True))
-png(OUT / "tray.png", 64, 64, draw(64, False))
+png(OUT / "tray.png", 64, 64, draw(64, False, zoom=1.2))
 print("wrote", OUT / "source.png", OUT / "tray.png")

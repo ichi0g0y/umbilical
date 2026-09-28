@@ -22,6 +22,9 @@ pub const PERMISSION_MODES: &[&str] = &[
     "plan",
 ];
 
+/// Where the GUI shows: the menu bar (tray), the Dock (taskbar), or both.
+pub const SHOW_IN_MODES: &[&str] = &["menu_bar", "menu_bar_and_dock", "dock"];
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -59,6 +62,8 @@ pub struct Config {
     pub debug: bool,
 
     pub autostart: bool,
+    /// One of [`SHOW_IN_MODES`]. Only the GUI reads it.
+    pub show_in: String,
     pub update: UpdateConfig,
 
     /// Per-directory settings. The key is the full path of the directory.
@@ -87,6 +92,7 @@ impl Default for Config {
             log_max_bytes: 5 * 1024 * 1024,
             debug: false,
             autostart: true,
+            show_in: "menu_bar".into(),
             update: UpdateConfig::default(),
             overrides: BTreeMap::new(),
         }
@@ -179,6 +185,7 @@ impl Config {
     pub fn validate(&self) -> Result<()> {
         check_one_of("spawn", &self.spawn, SPAWN_MODES)?;
         check_one_of("permission_mode", &self.permission_mode, PERMISSION_MODES)?;
+        check_one_of("show_in", &self.show_in, SHOW_IN_MODES)?;
         if !matches!(self.update.channel.as_str(), "stable" | "nightly") {
             anyhow::bail!(
                 "update.channel must be \"stable\" or \"nightly\", got {:?}",

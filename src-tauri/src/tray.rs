@@ -11,7 +11,7 @@ use umbilical_core::{RunState, Snapshot};
 
 use crate::AppState;
 
-const TRAY_ID: &str = "main";
+pub const TRAY_ID: &str = "main";
 
 /// What the current menu was built from. We rebuild only when this changes.
 #[derive(Default, PartialEq)]

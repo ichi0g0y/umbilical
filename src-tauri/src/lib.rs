@@ -6,6 +6,7 @@
 mod commands;
 mod daemon_ctl;
 mod login;
+mod presence;
 mod tray;
 mod update;
 
@@ -95,13 +96,25 @@ pub fn run() {
             commands::install_update,
         ])
         .setup(move |app| {
+            let show_in =
+                presence::ShowIn::parse(config.as_ref().map_or("menu_bar", |c| c.show_in.as_str()));
+            // Set this early, so a menu bar only app does not flash in the Dock.
             #[cfg(target_os = "macos")]
-            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            {
+                app.set_activation_policy(if show_in.dock() {
+                    tauri::ActivationPolicy::Regular
+                } else {
+                    tauri::ActivationPolicy::Accessory
+                });
+                let menu = presence::app_menu(app.handle())?;
+                app.set_menu(menu)?;
+            }
 
             if let Some(config) = &config {
                 sync_autostart(app.handle(), config.autostart);
             }
             tray::create(app.handle())?;
+            presence::apply(app.handle(), show_in);
 
             // Push status to the window and the tray. The first call starts
             // the daemon if it does not run yet.
@@ -122,6 +135,12 @@ pub fn run() {
             let autostarted = std::env::args().any(|a| a == "--autostart");
             if !autostarted || first_run {
                 show_window(app.handle());
+            } else if show_in == presence::ShowIn::Dock && cfg!(not(target_os = "macos")) {
+                // No tray: keep a taskbar button to open the window.
+                show_window(app.handle());
+                if let Some(w) = app.get_webview_window("main") {
+                    let _ = w.minimize();
+                }
             }
             Ok(())
         })
@@ -129,7 +148,13 @@ pub fn run() {
             // Closing the window only hides it. The app keeps running in the tray.
             if let WindowEvent::CloseRequested { api, .. } = event {
                 api.prevent_close();
-                let _ = window.hide();
+                // Without a tray on Windows, a hidden window cannot be opened
+                // again, so keep the taskbar button.
+                if presence::current() == presence::ShowIn::Dock && cfg!(not(target_os = "macos")) {
+                    let _ = window.minimize();
+                } else {
+                    let _ = window.hide();
+                }
             }
         })
         .build(tauri::generate_context!())
@@ -140,6 +165,9 @@ pub fn run() {
         RunEvent::ExitRequested {
             api, code: None, ..
         } => api.prevent_exit(),
+        // A click on the Dock icon.
+        #[cfg(target_os = "macos")]
+        RunEvent::Reopen { .. } => show_window(app),
         RunEvent::Exit => {
             // The daemon and the sessions keep running.
             let state = app.state::<AppState>();

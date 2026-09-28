@@ -70,6 +70,7 @@ pub fn save_config(app: AppHandle, state: State<AppState>, config: Config) -> Cm
     }
     state.daemon.send(Request::Reload);
     crate::sync_autostart(&app, config.autostart);
+    crate::presence::apply(&app, crate::presence::ShowIn::parse(&config.show_in));
     Ok(())
 }
 

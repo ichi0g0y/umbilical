@@ -222,6 +222,13 @@
         <h3>App</h3>
         <div class="grid">
           <label class="check"><input id="s-autostart" type="checkbox" /> Start at login</label>
+          <label>Show in
+            <select id="s-showin">
+              <option value="menu_bar">Menu bar only</option>
+              <option value="menu_bar_and_dock">Menu bar and Dock</option>
+              <option value="dock">Dock only</option>
+            </select>
+          </label>
           <label>Log folder
             <input id="s-logdir" type="text" spellcheck="false" />
           </label>
