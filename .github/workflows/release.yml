@@ -45,6 +45,9 @@ jobs:
             target: x86_64-apple-darwin
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: --bundles appimage,deb
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -52,6 +55,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
+      - name: Linux packages
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - name: Set version
@@ -65,7 +73,7 @@ jobs:
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
           tauriScript: bun run tauri
-          args: --target ${{ matrix.target }} --config src-tauri/tauri.version.json
+          args: --target ${{ matrix.target }} --config src-tauri/tauri.version.json ${{ matrix.bundles }}
           updaterJsonPreferNsis: true
 
   publish:

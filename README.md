@@ -1,6 +1,6 @@
 # Umbilical
 
-Umbilical is a small tray app for macOS and Windows. It keeps `claude remote-control` running in your project folders, so you can always open them from [claude.ai/code](https://claude.ai/code) or the Claude mobile app.
+Umbilical is a small tray app for macOS and Windows (Linux builds too, not tested much). It keeps `claude remote-control` running in your project folders, so you can always open them from [claude.ai/code](https://claude.ai/code) or the Claude mobile app.
 
 - It watches every folder directly inside a root folder (default `~/.umbilical/repos`). Symlinks work, so you can link your real projects there.
 - It starts one `claude remote-control` per folder, inside a pseudo terminal.
@@ -17,6 +17,7 @@ Download the latest build from [Releases](https://github.com/ichi0g0y/umbilical/
 
 - macOS: `Umbilical_<version>_aarch64.dmg` (Apple Silicon) or `_x64.dmg` (Intel)
 - Windows: `Umbilical_<version>_x64-setup.exe`
+- Linux: `Umbilical_<version>_amd64.AppImage` or `.deb`
 
 The builds are **not code signed**, so the OS warns you the first time:
 
@@ -59,6 +60,7 @@ stable_reset_secs = 600
 
 log_dir = ""                      # empty: ~/Library/Logs/Umbilical or %LOCALAPPDATA%\Umbilical\logs
 log_max_bytes = 5242880
+show_in = "menu_bar"              # menu_bar, menu_bar_and_dock or dock (Windows: taskbar)
 autostart = true
 
 [env]
@@ -95,7 +97,7 @@ Layout:
 
 ## Releases
 
-- **Stable**: `task release -- 0.1.0` pushes the tag `v0.1.0`. GitHub Actions builds macOS (arm64, x64) and Windows (x64) and publishes the release. The tag sets the app version.
+- **Stable**: `task release -- 0.1.0` pushes the tag `v0.1.0`. GitHub Actions builds macOS (arm64, x64), Windows (x64) and Linux (x64) and publishes the release. The tag sets the app version.
 - **Nightly**: every night (03:00 JST) GitHub Actions builds `main` if it changed, and replaces the `nightly` pre-release. The version is `<next patch>-nightly.<YYYYMMDDHHMM>`.
 
 The updater needs these repository secrets:
