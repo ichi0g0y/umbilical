@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Draw the Umbilical icons with no extra libraries.
 
-- src-tauri/icons/source.png : 1024x1024 app icon (feed it to `tauri icon`): an orange
-  ring on a dark rounded square
-- src-tauri/icons/tray.png   : 64x64 black template icon for the tray. It has the
-  same square as the app icon, with the ring cut out.
+- src-tauri/icons/source.png         : 1024x1024 app icon for macOS and Linux (feed it
+  to `tauri icon`): an orange ring on a dark rounded square
+- src-tauri/icons/source-windows.png : 1024x1024 app icon for Windows: a white ring only
+- src-tauri/icons/tray.png           : 64x64 black ring, a template icon for the macOS
+  menu bar (macOS makes it black or white)
+- src-tauri/icons/tray-white.png     : 64x64 white ring for the Windows and Linux tray
 """
 import math
 import struct
@@ -36,10 +38,34 @@ def sd_round_box(x, y, half, r):
     return math.hypot(max(qx, 0), max(qy, 0)) + min(max(qx, qy), 0) - r
 
 
-def sd_segment(x, y, ax, ay, bx, by):
-    px, py, vx, vy = x - ax, y - ay, bx - ax, by - ay
-    t = max(0.0, min(1.0, (px * vx + py * vy) / (vx * vx + vy * vy)))
-    return math.hypot(px - vx * t, py - vy * t)
+def ring(x, y):
+    """Distance to a ring in the middle, in unit space (-1..1)."""
+    return abs(math.hypot(x, y) - 0.42) - 0.09
+
+
+def draw(size, app_bg, rgb=(0, 0, 0), zoom=1.0):
+    """app_bg: orange ring on the dark square. Else only the ring in `rgb`.
+    zoom > 1 draws the ring bigger, so it fills more of the image."""
+    px = [0] * (size * size * 4)
+    aa = 2.0 / size / zoom
+    for j in range(size):
+        y = ((j + 0.5) / size * 2 - 1) / zoom
+        for i in range(size):
+            x = ((i + 0.5) / size * 2 - 1) / zoom
+            g = cover(ring(x, y), aa)
+            k = (j * size + i) * 4
+            if app_bg:
+                bg = cover(sd_round_box(x, y, 0.80, 0.22), aa)
+                if bg == 0:
+                    continue
+                t = (y + 1) / 2
+                base = (int(24 + 10 * t), int(30 + 12 * t), int(46 + 22 * t))
+                fg = (236, 128, 84)
+                mixed = [round(base[c] * (1 - g) + fg[c] * g) for c in range(3)]
+                px[k:k + 4] = mixed + [round(255 * bg)]
+            else:
+                px[k:k + 4] = list(rgb) + [round(255 * g)]
+    return px
 
 
 def ring(x, y):
@@ -47,42 +73,15 @@ def ring(x, y):
     return abs(math.hypot(x, y) - 0.42) - 0.09
 
 
-def glyph(x, y):
-    """Distance to the glyph in unit space (-1..1): a ring, a cable and a plug."""
-    ring = abs(math.hypot(x, y + 0.08) - 0.42) - 0.075
-    a = math.radians(225)
-    sx, sy = 0.42 * math.cos(a), 0.42 * math.sin(a) - 0.08
-    cable = sd_segment(x, y, sx, sy, -0.72, 0.72) - 0.06
-    plug = math.hypot(x - 0.30, y + 0.38) - 0.13
-    return min(ring, cable, plug)
-
-
-def draw(size, with_bg, zoom=1.0, shape=glyph):
-    """zoom > 1 draws the icon bigger, so the square fills more of the image."""
-    px = [0] * (size * size * 4)
-    aa = 2.0 / size / zoom
-    for j in range(size):
-        y = ((j + 0.5) / size * 2 - 1) / zoom
-        for i in range(size):
-            x = ((i + 0.5) / size * 2 - 1) / zoom
-            g = cover(shape(x, y), aa)
-            k = (j * size + i) * 4
-            if with_bg:
-                bg = cover(sd_round_box(x, y, 0.80, 0.22), aa)
-                if bg == 0:
-                    continue
-                t = (y + 1) / 2
-                base = (int(24 + 10 * t), int(30 + 12 * t), int(46 + 22 * t))
-                fg = (236, 128, 84)
-                rgb = [round(base[c] * (1 - g) + fg[c] * g) for c in range(3)]
-                px[k:k + 4] = rgb + [round(255 * bg)]
-            else:
-                bg = cover(sd_round_box(x, y, 0.80, 0.22), aa)
-                px[k:k + 4] = [0, 0, 0, round(255 * bg * (1 - g))]
-    return px
-
-
+WHITE = (255, 255, 255)
 OUT.mkdir(parents=True, exist_ok=True)
-png(OUT / "source.png", 1024, 1024, draw(1024, True, shape=ring))
-png(OUT / "tray.png", 64, 64, draw(64, False, zoom=1.2, shape=ring))
-print("wrote", OUT / "source.png", OUT / "tray.png")
+files = {
+    "source.png": draw(1024, True),
+    "source-windows.png": draw(1024, False, WHITE, zoom=1.8),
+    "tray.png": draw(64, False, zoom=1.8),
+    "tray-white.png": draw(64, False, WHITE, zoom=1.8),
+}
+for name, px in files.items():
+    size = int((len(px) // 4) ** 0.5)
+    png(OUT / name, size, size, px)
+    print("wrote", OUT / name)

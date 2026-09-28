@@ -26,6 +26,10 @@ tasks:
       - python3 scripts/make-icons.py
       - bun run tauri icon src-tauri/icons/source.png -o src-tauri/icons
       - rm -rf src-tauri/icons/android src-tauri/icons/ios
+      # Windows uses a white ring only.
+      - bun run tauri icon src-tauri/icons/source-windows.png -o .icons-windows
+      - cp .icons-windows/icon.ico src-tauri/icons/icon.ico
+      - rm -rf .icons-windows
 
   release:
     desc: "Tag and push a stable release. Usage: task release -- 0.1.0"

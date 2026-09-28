@@ -29,11 +29,17 @@ struct TrayState {
 
 pub fn create(app: &AppHandle) -> tauri::Result<()> {
     app.manage(Mutex::new(TrayState::default()));
-    let icon = Image::from_bytes(include_bytes!("../icons/tray.png"))?;
+    // macOS draws the black template icon in black or white to match the menu bar.
+    // Other trays have no template icons, so they get a white ring.
+    #[cfg(target_os = "macos")]
+    let bytes = include_bytes!("../icons/tray.png").as_slice();
+    #[cfg(not(target_os = "macos"))]
+    let bytes = include_bytes!("../icons/tray-white.png").as_slice();
+    let icon = Image::from_bytes(bytes)?;
     let menu = Menu::new(app)?;
     TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon)
-        .icon_as_template(true)
+        .icon_as_template(cfg!(target_os = "macos"))
         .tooltip("Umbilical")
         .menu(&menu)
         .show_menu_on_left_click(true)
