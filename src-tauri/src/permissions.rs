@@ -188,7 +188,10 @@ mod mac {
                 "input" => ffi::input_monitoring_request(),
                 "camera" => ffi::av_request(ffi::Media::Video),
                 "microphone" => ffi::av_request(ffi::Media::Audio),
-                "automation" => ffi::automation_request(&["Finder", "System Events"]),
+                "automation" => ffi::automation_request(&[
+                    r#"tell application "Finder" to get name of startup disk"#,
+                    r#"tell application "System Events" to count processes"#,
+                ]),
                 _ => {}
             }
             return Ok(());

@@ -180,14 +180,16 @@ pub fn automation(bundle_id: &str) -> &'static str {
     }
 }
 
-/// Send a harmless AppleScript to each app. macOS then asks the user, and
-/// Umbilical shows up in the Automation list (it has no + button).
-pub fn automation_request(apps: &[&str]) {
-    let apps: Vec<String> = apps.iter().map(|a| a.to_string()).collect();
+/// Send a harmless AppleScript command to each app. macOS then asks the user,
+/// and Umbilical shows up in the Automation list (it has no + button).
+/// The command must really send an event: `get name` of an app is answered by
+/// AppleScript itself, and macOS asks nothing.
+pub fn automation_request(scripts: &[&str]) {
+    let scripts: Vec<String> = scripts.iter().map(|s| s.to_string()).collect();
     std::thread::spawn(move || {
-        for app in apps {
+        for script in scripts {
             let _ = std::process::Command::new("osascript")
-                .args(["-e", &format!("tell application \"{app}\" to get name")])
+                .args(["-e", &script])
                 .output();
         }
     });
