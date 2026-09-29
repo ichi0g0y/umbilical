@@ -6,7 +6,7 @@ Umbilical is a small tray app for macOS and Windows (Linux builds too, not teste
 - It starts one `claude remote-control` per folder, inside a pseudo terminal.
 - If a process stops, it starts it again. The wait gets longer each time (5s, 10s, … up to 300s). After 10 minutes of good running, the wait goes back to 5s.
 - New folders are added and removed folders are stopped automatically.
-- The tray shows `running/total`. The window shows the state, errors and output of each folder, and how many sessions are working now.
+- The tray shows only its icon. You can turn on a count (`running/total`) next to it. The window shows the state, errors and output of each folder, and how many sessions are working now.
 - You choose where it shows (menu bar, Dock, or both) and if the window opens at start.
 - It starts at login and updates itself from GitHub Releases (stable or nightly). **Updates wait until no session is working**, because the restart stops running turns ("Install now" does not wait). "Check for Updates…" is in the tray and app menus.
 - The sessions run in a small background daemon (`Umbilical --daemon`). **Quitting the window/tray app does not stop them.** Use "Stop all sessions and quit" in the tray menu to stop everything.
@@ -70,6 +70,7 @@ stable_reset_secs = 600
 log_dir = ""                      # empty: ~/Library/Logs/Umbilical or %LOCALAPPDATA%\Umbilical\logs
 log_max_bytes = 5242880
 show_in = "menu_bar"              # menu_bar, menu_bar_and_dock or dock (Windows: taskbar)
+tray_count = false                # show "running/total" next to the tray icon (macOS)
 start_window = "manual"           # open the window at start: manual (not at login), always or never
 autostart = true
 

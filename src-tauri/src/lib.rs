@@ -134,6 +134,7 @@ pub fn run() {
                 sync_autostart(app.handle(), config.autostart);
             }
             tray::create(app.handle())?;
+            tray::set_show_count(config.as_ref().is_some_and(|c| c.tray_count));
             presence::apply(app.handle(), show_in);
 
             // Before the first daemon call: an old daemon is kept while
