@@ -29,7 +29,10 @@ function ago(unix) {
 
 function stateText(d) {
   switch (d.state) {
-    case "running": return d.started_at ? `running for ${ago(d.started_at)}` : "running";
+    case "running": {
+      const base = d.started_at ? `running for ${ago(d.started_at)}` : "running";
+      return d.busy ? `${base} · ${d.busy} working` : base;
+    }
     case "waiting": {
       if (!d.next_restart_at) return "waiting";
       const left = Math.max(0, d.next_restart_at - Math.floor(Date.now() / 1000));
@@ -390,6 +393,7 @@ function renderUpdate(u) {
   if (!u) return;
   let text;
   if (u.installing) text = "Installing… the app restarts when done.";
+  else if (u.waiting) text = `Version ${u.available?.version} installs when no session is working. "Install now" stops running turns.`;
   else if (u.checking) text = "Checking…";
   else if (u.error) text = `Update check failed: ${u.error}`;
   else if (u.available) text = `Version ${u.available.version} is available (${u.channel} channel).`;
@@ -400,6 +404,8 @@ function renderUpdate(u) {
   $("u-notes").textContent = notes ?? "";
   $("u-notes").classList.toggle("hidden", !notes);
   $("u-install").classList.toggle("hidden", !u.available || u.installing);
+  $("u-install").textContent = u.waiting ? "Install now" : "Install and restart";
+  $("u-install").dataset.force = u.waiting ? "1" : "";
   $("u-check").disabled = u.checking || u.installing;
 }
 
@@ -408,7 +414,7 @@ $("u-check").onclick = async () => {
   try { await invoke("check_update"); } catch (_) { /* shown by the event */ }
   renderUpdate(await invoke("get_update"));
 };
-$("u-install").onclick = () => invoke("install_update");
+$("u-install").onclick = () => invoke("install_update", { force: $("u-install").dataset.force === "1" });
 
 // Answer once: a second click would type a second "y" into the session.
 $("consent-all").onclick = () => {

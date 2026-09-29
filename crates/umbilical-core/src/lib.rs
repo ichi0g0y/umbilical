@@ -3,6 +3,7 @@
 //!
 //! This crate has no GUI code, so a headless mode can use it later.
 
+pub mod activity;
 pub mod child;
 pub mod config;
 pub mod daemon;

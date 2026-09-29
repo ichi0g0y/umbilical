@@ -207,6 +207,6 @@ pub async fn check_update(app: AppHandle) -> CmdResult<Option<update::Available>
 }
 
 #[tauri::command]
-pub async fn install_update(app: AppHandle) {
-    update::install(&app).await;
+pub async fn install_update(app: AppHandle, force: Option<bool>) {
+    update::install(&app, force.unwrap_or(false)).await;
 }

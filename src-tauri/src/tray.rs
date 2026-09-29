@@ -17,7 +17,8 @@ pub const TRAY_ID: &str = "main";
 #[derive(Default, PartialEq)]
 struct MenuShape {
     keys: Vec<String>,
-    update: Option<String>,
+    /// (version, waiting for working sessions)
+    update: Option<(String, bool)>,
 }
 
 #[derive(Default)]
@@ -62,7 +63,13 @@ fn on_menu(app: &AppHandle, id: &str) {
         "update" => {
             let app = app.clone();
             tauri::async_runtime::spawn(async move {
-                crate::update::install(&app).await;
+                crate::update::install(&app, false).await;
+            });
+        }
+        "update_now" => {
+            let app = app.clone();
+            tauri::async_runtime::spawn(async move {
+                crate::update::install(&app, true).await;
             });
         }
         // The sessions keep running in the daemon.
@@ -97,14 +104,11 @@ pub fn refresh(app: &AppHandle, snapshot: &Snapshot) {
     let _ = tray.set_title(Some(&title));
     let _ = tray.set_tooltip(Some(format!("Umbilical: {title} running")));
 
-    let update = app
-        .state::<AppState>()
-        .update
-        .lock()
-        .unwrap()
-        .available
-        .as_ref()
-        .map(|u| u.version.clone());
+    let update = {
+        let state = app.state::<AppState>();
+        let u = state.update.lock().unwrap();
+        u.available.as_ref().map(|a| (a.version.clone(), u.waiting))
+    };
     let shape = MenuShape {
         keys: snapshot.dirs.iter().map(|d| d.key.clone()).collect(),
         update,
@@ -178,15 +182,25 @@ fn build_menu(app: &AppHandle, snapshot: &Snapshot, shape: &MenuShape) -> tauri:
         true,
         None::<&str>,
     )?)?;
-    if let Some(v) = &shape.update {
+    if let Some((v, waiting)) = &shape.update {
         menu.append(&PredefinedMenuItem::separator(app)?)?;
-        menu.append(&MenuItem::with_id(
-            app,
-            "update",
-            format!("Install update {v}"),
-            true,
-            None::<&str>,
-        )?)?;
+        let (id, text) = if *waiting {
+            let info = format!("Update {v} waits for working sessions");
+            menu.append(&MenuItem::with_id(
+                app,
+                "update_info",
+                info,
+                false,
+                None::<&str>,
+            )?)?;
+            (
+                "update_now",
+                "Install now (stops running turns)".to_string(),
+            )
+        } else {
+            ("update", format!("Install update {v}"))
+        };
+        menu.append(&MenuItem::with_id(app, id, text, true, None::<&str>)?)?;
     }
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&MenuItem::with_id(

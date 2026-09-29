@@ -23,6 +23,8 @@ pub struct UpdateState {
     pub channel: String,
     pub checking: bool,
     pub installing: bool,
+    /// The install waits until no session is working.
+    pub waiting: bool,
     /// Unix seconds.
     pub last_checked: Option<u64>,
     pub available: Option<Available>,
@@ -109,7 +111,12 @@ async fn do_check(app: &AppHandle, channel: &str) -> Result<Option<Update>, Stri
 }
 
 /// Download, stop all children, install, restart the app.
-pub async fn install(app: &AppHandle) {
+/// Without `force`, first wait until no session is working: the restart cuts
+/// the turn that is running.
+pub async fn install(app: &AppHandle, force: bool) {
+    if !force && !wait_until_idle(app).await {
+        return;
+    }
     let state = app.state::<AppState>();
     let log_dir = state.config().log_dir();
     let pending = {
@@ -118,6 +125,7 @@ pub async fn install(app: &AppHandle) {
             return;
         }
         u.installing = true;
+        u.waiting = false;
         u.pending.clone()
     };
     let Some(update) = pending else {
@@ -147,6 +155,39 @@ pub async fn install(app: &AppHandle) {
         app_log(&log_dir, "update: installed, restarting");
     }
     app.restart();
+}
+
+/// false: another call waits already, it was cancelled, or a forced install started.
+async fn wait_until_idle(app: &AppHandle) -> bool {
+    let state = app.state::<AppState>();
+    let mut first = true;
+    loop {
+        let busy = state.activity.total();
+        let (done, announce) = {
+            let mut u = state.update.lock().unwrap();
+            if u.installing || (first && u.waiting) || (!first && !u.waiting) {
+                (Some(false), None)
+            } else if busy == 0 {
+                u.waiting = false;
+                (Some(true), None)
+            } else if first {
+                u.waiting = true;
+                (None, Some(u.view()))
+            } else {
+                (None, None)
+            }
+        };
+        if let Some(done) = done {
+            return done;
+        }
+        if let Some(view) = announce {
+            let msg = format!("update: waiting, {busy} session(s) working");
+            app_log(&state.config().log_dir(), &msg);
+            let _ = app.emit("update", view);
+        }
+        first = false;
+        tokio_sleep(Duration::from_secs(15)).await;
+    }
 }
 
 fn fail(app: &AppHandle, msg: String) {
@@ -179,7 +220,7 @@ pub fn spawn_checker(app: AppHandle) {
                 if let Ok(Some(_)) = check(&app).await
                     && config.auto_install
                 {
-                    install(&app).await;
+                    install(&app, false).await;
                 }
                 last = Some(Instant::now());
             } else if last.is_none() {

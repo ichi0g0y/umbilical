@@ -3,6 +3,7 @@
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use serde::de::DeserializeOwned;
@@ -13,6 +14,10 @@ pub struct DaemonCtl {
     client: Mutex<Option<Client>>,
     // Only one thread starts the daemon at a time.
     starting: Mutex<()>,
+    /// Sessions are working: keep an old daemon for now (replacing it restarts them).
+    hold: AtomicBool,
+    /// We use an old daemon and replace it when nothing works.
+    outdated: AtomicBool,
 }
 
 impl DaemonCtl {
@@ -21,6 +26,8 @@ impl DaemonCtl {
             paths: Paths::default(),
             client: Mutex::new(None),
             starting: Mutex::new(()),
+            hold: AtomicBool::new(false),
+            outdated: AtomicBool::new(false),
         }
     }
 
@@ -41,6 +48,21 @@ impl DaemonCtl {
         let _ = self.call::<serde_json::Value>(&request);
     }
 
+    pub fn set_hold(&self, hold: bool) {
+        self.hold.store(hold, Ordering::Relaxed);
+    }
+
+    /// An old daemon is kept because sessions were working. Replace it once they stop.
+    /// Returns true when it was replaced.
+    pub fn replace_if_outdated(&self) -> bool {
+        if !self.outdated.load(Ordering::Relaxed) || self.hold.load(Ordering::Relaxed) {
+            return false;
+        }
+        self.outdated.store(false, Ordering::Relaxed);
+        self.client.lock().unwrap().take();
+        self.ensure().is_ok()
+    }
+
     /// Stop every session and the daemon.
     pub fn shutdown(&self) {
         let cached = self.client.lock().unwrap().take();
@@ -56,6 +78,12 @@ impl DaemonCtl {
         let exe = std::env::current_exe().map_err(|e| e.to_string())?;
         if let Ok(c) = Client::connect(&self.paths) {
             if is_current(&c, &exe) {
+                *self.client.lock().unwrap() = Some(c.clone());
+                return Ok(c);
+            }
+            if self.hold.load(Ordering::Relaxed) {
+                // Replacing restarts the sessions. Wait until none is working.
+                self.outdated.store(true, Ordering::Relaxed);
                 *self.client.lock().unwrap() = Some(c.clone());
                 return Ok(c);
             }

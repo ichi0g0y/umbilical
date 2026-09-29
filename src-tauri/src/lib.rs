@@ -3,6 +3,7 @@
 //! The sessions live in a separate daemon process (`umbilical --daemon`).
 //! Quitting the GUI does not stop them.
 
+mod activity;
 mod commands;
 mod daemon_ctl;
 mod login;
@@ -28,6 +29,7 @@ pub struct AppState {
     pub config_path: PathBuf,
     pub update: Mutex<update::UpdateState>,
     pub login: Mutex<login::LoginState>,
+    pub activity: activity::Activity,
 }
 
 impl AppState {
@@ -37,12 +39,15 @@ impl AppState {
 
     /// Status from the daemon. If it cannot be reached, an empty status with the error.
     pub fn snapshot(&self) -> Snapshot {
-        self.daemon
+        let mut s = self
+            .daemon
             .call::<Snapshot>(&Request::Status)
             .unwrap_or_else(|e| Snapshot {
                 daemon_error: Some(e),
                 ..Snapshot::default()
-            })
+            });
+        self.activity.apply(&mut s);
+        s
     }
 }
 
@@ -74,6 +79,7 @@ pub fn run() {
             config_path,
             update: Mutex::new(update::UpdateState::default()),
             login: Mutex::new(login::LoginState::default()),
+            activity: activity::Activity::default(),
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_status,
@@ -121,12 +127,29 @@ pub fn run() {
             tray::create(app.handle())?;
             presence::apply(app.handle(), show_in);
 
+            // Before the first daemon call: an old daemon is kept while
+            // sessions work (see daemon_ctl).
+            {
+                let state = app.state::<AppState>();
+                state.activity.refresh(|| state.config());
+                state.daemon.set_hold(state.activity.total() > 0);
+            }
+
             // Push status to the window and the tray. The first call starts
             // the daemon if it does not run yet.
             let handle = app.handle().clone();
             std::thread::spawn(move || {
                 loop {
                     let state = handle.state::<AppState>();
+                    // Know the working sessions before the daemon may be replaced.
+                    state.activity.refresh(|| state.config());
+                    state.daemon.set_hold(state.activity.total() > 0);
+                    if state.daemon.replace_if_outdated() {
+                        app_log(
+                            &state.config().log_dir(),
+                            "daemon replaced: no session works now",
+                        );
+                    }
                     let snapshot = state.snapshot();
                     let _ = handle.emit("status", &snapshot);
                     tray::refresh(&handle, &snapshot);

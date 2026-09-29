@@ -77,6 +77,9 @@ pub struct DirStatus {
     pub spawn: String,
     pub effective_spawn: String,
     pub log_path: String,
+    /// Sessions working right now (see `activity`). The GUI fills it in.
+    #[serde(default)]
+    pub busy: usize,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -645,6 +648,7 @@ impl Worker {
                     spawn: e.target.settings.spawn.clone(),
                     effective_spawn: e.target.settings.effective_spawn.clone(),
                     log_path: self.log_path_for(key).to_string_lossy().into_owned(),
+                    busy: 0,
                 }
             })
             .collect();
