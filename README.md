@@ -31,7 +31,7 @@ Later updates are downloaded by the app itself, so they should not show these wa
 
 Sessions run inside Umbilical, so macOS uses Umbilical's permissions for them (Accessibility, Screen Recording, and so on). Open the **Permissions** tab to see them and allow what your sessions need. Then click **Restart all**.
 
-The macOS builds are signed with our own (self-signed) certificate. It is the same for every version, so macOS keeps the permissions after an update. (Builds before 0.1.2 had no fixed signature. After you update from them, allow the permissions once more.)
+The macOS builds are signed with our own (self-signed) certificate. It is the same for every version, so macOS keeps the permissions after an update. (Builds before 0.1.3 used another signature or app ID. After you update from them, allow the permissions once more.)
 
 ## Before the first start
 
