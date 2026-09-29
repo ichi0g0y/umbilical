@@ -33,6 +33,11 @@ export function GeneralCard() {
           <SelectField value={config.show_in} options={SHOW_IN} onChange={(v) => edit((c) => void (c.show_in = v as ShowIn))} />
         </Field>
       </div>
+      <Field label="Menu bar" hint="Off shows only the icon. Only macOS can show text here. “setup” and “!” always show.">
+        <CheckField checked={config.tray_count} onChange={(v) => edit((c) => void (c.tray_count = v))}>
+          Show the count (running/total) next to the icon
+        </CheckField>
+      </Field>
     </Section>
   );
 }

@@ -80,6 +80,7 @@ export interface Config {
   debug: boolean;
   autostart: boolean;
   show_in: ShowIn;
+  tray_count: boolean;
   start_window: StartWindow;
   update: UpdateConfig;
   overrides: Record<string, DirOverride>;

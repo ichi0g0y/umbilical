@@ -1,6 +1,7 @@
 //! Tray icon (menu bar on macOS).
 
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use tauri::image::Image;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
@@ -12,6 +13,14 @@ use umbilical_core::{RunState, Snapshot};
 use crate::AppState;
 
 pub const TRAY_ID: &str = "main";
+
+/// `config.tray_count`. Off means the menu bar shows only the icon.
+static SHOW_COUNT: AtomicBool = AtomicBool::new(false);
+
+/// Set by the config. The next [`refresh`] draws the new title (about 1s).
+pub fn set_show_count(show: bool) {
+    SHOW_COUNT.store(show, Ordering::Relaxed);
+}
 
 /// What the current menu was built from. We rebuild only when this changes.
 #[derive(Default, PartialEq)]
@@ -107,16 +116,30 @@ pub fn refresh(app: &AppHandle, snapshot: &Snapshot) {
     let Some(tray) = app.tray_by_id(TRAY_ID) else {
         return;
     };
-    let attention = snapshot.dirs.iter().any(|d| d.attention.is_some());
-    let mut title = format!("{}/{}", snapshot.running, snapshot.total);
-    if snapshot.needs_setup {
-        title = "setup".into();
-    } else if attention || snapshot.config_error.is_some() {
-        title.push_str(" !");
-    }
+    let count = format!("{}/{}", snapshot.running, snapshot.total);
+    let _ = tray.set_tooltip(Some(format!("Umbilical: {count} running")));
+    // Only macOS draws a title next to the icon. The count is optional, but
+    // "setup" and "!" always show, because the user has to do something.
     #[cfg(target_os = "macos")]
-    let _ = tray.set_title(Some(&title));
-    let _ = tray.set_tooltip(Some(format!("Umbilical: {title} running")));
+    {
+        let alert =
+            snapshot.dirs.iter().any(|d| d.attention.is_some()) || snapshot.config_error.is_some();
+        let mut title = if SHOW_COUNT.load(Ordering::Relaxed) {
+            count
+        } else {
+            String::new()
+        };
+        if snapshot.needs_setup {
+            title = "setup".into();
+        } else if alert {
+            title = if title.is_empty() {
+                "!".into()
+            } else {
+                format!("{title} !")
+            };
+        }
+        let _ = tray.set_title((!title.is_empty()).then_some(title.as_str()));
+    }
 
     let update = {
         let state = app.state::<AppState>();

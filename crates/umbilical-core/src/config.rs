@@ -68,6 +68,9 @@ pub struct Config {
     pub autostart: bool,
     /// One of [`SHOW_IN_MODES`]. Only the GUI reads it.
     pub show_in: String,
+    /// Show `running/total` next to the tray icon. Only the GUI reads it,
+    /// and only macOS draws a title there.
+    pub tray_count: bool,
     /// One of [`START_WINDOW_MODES`]. Only the GUI reads it.
     pub start_window: String,
     pub update: UpdateConfig,
@@ -99,6 +102,7 @@ impl Default for Config {
             debug: false,
             autostart: true,
             show_in: "menu_bar".into(),
+            tray_count: false,
             start_window: "manual".into(),
             update: UpdateConfig::default(),
             overrides: BTreeMap::new(),
