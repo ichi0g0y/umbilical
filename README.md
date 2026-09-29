@@ -67,6 +67,7 @@ stable_reset_secs = 600
 log_dir = ""                      # empty: ~/Library/Logs/Umbilical or %LOCALAPPDATA%\Umbilical\logs
 log_max_bytes = 5242880
 show_in = "menu_bar"              # menu_bar, menu_bar_and_dock or dock (Windows: taskbar)
+start_window = "manual"           # open the window at start: manual (not at login), always or never
 autostart = true
 
 [env]
@@ -114,3 +115,7 @@ The updater needs these repository secrets:
 ## License
 
 MIT
+
+## Support
+
+Umbilical is free and stays free. If it helps you, [buy me a coffee](https://buymeacoffee.com/ichi0g0y) or [sponsor on GitHub](https://github.com/sponsors/ichi0g0y).

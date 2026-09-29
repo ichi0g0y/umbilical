@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use tauri::image::Image;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{AppHandle, Manager, Wry};
+use tauri::{AppHandle, Emitter, Manager, Wry};
 use umbilical_core::daemon::Request;
 use umbilical_core::{RunState, Snapshot};
 
@@ -53,6 +53,14 @@ fn on_menu(app: &AppHandle, id: &str) {
     let state = app.state::<AppState>();
     match id {
         "open" => crate::show_window(app),
+        "about" => open_tab(app, "about"),
+        "check_update" => {
+            open_tab(app, "about");
+            let app = app.clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = crate::update::check(&app).await;
+            });
+        }
         "restart_all" => state.daemon.send(Request::RestartAll),
         "logs" => {
             use tauri_plugin_opener::OpenerExt;
@@ -86,6 +94,12 @@ fn on_menu(app: &AppHandle, id: &str) {
             }
         }
     }
+}
+
+/// Show the window on a tab of the UI.
+fn open_tab(app: &AppHandle, tab: &str) {
+    crate::show_window(app);
+    let _ = app.emit("navigate", tab);
 }
 
 /// Update the title, tooltip and menu labels. Called about once a second.
@@ -168,6 +182,21 @@ fn build_menu(app: &AppHandle, snapshot: &Snapshot, shape: &MenuShape) -> tauri:
         true,
         None::<&str>,
     )?)?;
+    menu.append(&MenuItem::with_id(
+        app,
+        "about",
+        "About Umbilical",
+        true,
+        None::<&str>,
+    )?)?;
+    menu.append(&MenuItem::with_id(
+        app,
+        "check_update",
+        "Check for Updates…",
+        true,
+        None::<&str>,
+    )?)?;
+    menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&MenuItem::with_id(
         app,
         "restart_all",

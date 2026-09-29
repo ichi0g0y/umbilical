@@ -168,9 +168,17 @@ pub fn run() {
 
             update::spawn_checker(app.handle().clone());
 
-            // First run (not started by login): show the window so the user sees it works.
+            // The first run always shows the window: it asks for the root folder.
             let autostarted = std::env::args().any(|a| a == "--autostart");
-            if !autostarted || first_run {
+            let start_window = config
+                .as_ref()
+                .map_or("manual", |c| c.start_window.as_str());
+            let open = match start_window {
+                "always" => true,
+                "never" => false,
+                _ => !autostarted,
+            };
+            if open || first_run {
                 show_window(app.handle());
             } else if show_in == presence::ShowIn::Dock && cfg!(not(target_os = "macos")) {
                 // No tray: keep a taskbar button to open the window.

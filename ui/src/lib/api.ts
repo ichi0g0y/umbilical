@@ -57,6 +57,7 @@ export interface UpdateConfig {
 }
 
 export type ShowIn = "menu_bar" | "menu_bar_and_dock" | "dock";
+export type StartWindow = "manual" | "always" | "never";
 
 export interface Config {
   roots: string[];
@@ -79,6 +80,7 @@ export interface Config {
   debug: boolean;
   autostart: boolean;
   show_in: ShowIn;
+  start_window: StartWindow;
   update: UpdateConfig;
   overrides: Record<string, DirOverride>;
 }

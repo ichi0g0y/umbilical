@@ -25,6 +25,10 @@ pub const PERMISSION_MODES: &[&str] = &[
 /// Where the GUI shows: the menu bar (tray), the Dock (taskbar), or both.
 pub const SHOW_IN_MODES: &[&str] = &["menu_bar", "menu_bar_and_dock", "dock"];
 
+/// When the GUI opens its window at start: `manual` = only when started by
+/// hand (not at login), `always`, or `never` (open it from the menu bar or Dock).
+pub const START_WINDOW_MODES: &[&str] = &["manual", "always", "never"];
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -64,6 +68,8 @@ pub struct Config {
     pub autostart: bool,
     /// One of [`SHOW_IN_MODES`]. Only the GUI reads it.
     pub show_in: String,
+    /// One of [`START_WINDOW_MODES`]. Only the GUI reads it.
+    pub start_window: String,
     pub update: UpdateConfig,
 
     /// Per-directory settings. The key is the full path of the directory.
@@ -93,6 +99,7 @@ impl Default for Config {
             debug: false,
             autostart: true,
             show_in: "menu_bar".into(),
+            start_window: "manual".into(),
             update: UpdateConfig::default(),
             overrides: BTreeMap::new(),
         }
@@ -186,6 +193,7 @@ impl Config {
         check_one_of("spawn", &self.spawn, SPAWN_MODES)?;
         check_one_of("permission_mode", &self.permission_mode, PERMISSION_MODES)?;
         check_one_of("show_in", &self.show_in, SHOW_IN_MODES)?;
+        check_one_of("start_window", &self.start_window, START_WINDOW_MODES)?;
         if !matches!(self.update.channel.as_str(), "stable" | "nightly") {
             anyhow::bail!(
                 "update.channel must be \"stable\" or \"nightly\", got {:?}",

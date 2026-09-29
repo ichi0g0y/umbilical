@@ -11,7 +11,7 @@ export function DefaultsCard() {
   const edit = useEditConfig();
   const snapshot = useAtomValue(snapshotAtom);
   return (
-    <Section title="Defaults for every folder">
+    <Section id="defaults" title="Defaults for every folder">
       <div className="grid grid-cols-2 gap-4">
         <Field label="Permission mode">
           <SelectField value={config.permission_mode} options={PERMISSION_MODES} onChange={(v) => edit((c) => void (c.permission_mode = v!))} />

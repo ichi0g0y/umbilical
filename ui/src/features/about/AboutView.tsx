@@ -1,9 +1,13 @@
 import { useAtomValue } from "jotai";
+import { Coffee } from "lucide-react";
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { appInfoAtom, snapshotAtom } from "@/state/atoms";
 import { UpdateCard } from "./UpdateCard";
+
+const BMAC = "https://buymeacoffee.com/ichi0g0y";
 
 function Link({ path, children, reveal }: { path: string; children: ReactNode; reveal?: boolean }) {
   return (
@@ -51,6 +55,18 @@ export function AboutView() {
         </CardContent>
       </Card>
       <UpdateCard />
+      <Card className="gap-3 py-4">
+        <CardHeader className="px-4">
+          <CardTitle className="text-sm">Support</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center gap-3 px-4">
+          <p className="flex-1">Umbilical is free and stays free. If it helps you, buy me a coffee.</p>
+          <Button onClick={() => api.openPath(BMAC)}>
+            <Coffee />
+            Buy Me a Coffee
+          </Button>
+        </CardContent>
+      </Card>
       <Card className="gap-2 border-wait/50 py-4">
         <CardHeader className="px-4">
           <CardTitle className="text-sm">Security</CardTitle>

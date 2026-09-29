@@ -36,7 +36,7 @@ export function TargetsCard() {
   const config = useDraftConfig()!;
   const edit = useEditConfig();
   return (
-    <Section title="Targets" description="Every folder directly inside a root is watched. New folders are picked up automatically. Symlinks work.">
+    <Section id="targets" title="Targets" description="Every folder directly inside a root is watched. New folders are picked up automatically. Symlinks work.">
       <Field label="Root folders">
         <PathList list="roots" />
       </Field>

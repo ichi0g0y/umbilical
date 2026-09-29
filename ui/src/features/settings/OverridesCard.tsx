@@ -51,7 +51,7 @@ export function OverridesCard() {
     });
 
   return (
-    <div ref={ref} className="scroll-mt-4">
+    <div ref={ref} id="folders" className="scroll-mt-4">
       <Section title="Per-folder settings" description="Empty fields use the defaults above.">
         <Field label="Folder">
           <SelectField value={key} options={options} inherit="Choose a folder…" onChange={setKey} />

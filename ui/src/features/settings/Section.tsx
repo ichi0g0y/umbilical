@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export function Section({ title, description, children, id }: { title: string; description?: ReactNode; children: ReactNode; id?: string }) {
   return (
-    <Card id={id} className="gap-4 py-4">
+    <Card id={id} className="scroll-mt-4 gap-4 py-4">
       <CardHeader className="px-4">
         <CardTitle className="text-sm">{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}

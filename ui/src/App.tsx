@@ -32,7 +32,7 @@ export function App() {
         <TabsContent value="status" className="min-h-0 flex-1">
           <StatusView />
         </TabsContent>
-        <TabsContent value="settings" className="min-h-0 flex-1 overflow-y-auto">
+        <TabsContent value="settings" className="min-h-0 flex-1">
           <SettingsView />
         </TabsContent>
         <TabsContent value="permissions" className="min-h-0 flex-1 overflow-y-auto">

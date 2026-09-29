@@ -81,7 +81,8 @@ pub fn app_menu(app: &AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>>
     let item =
         |id: &str, text: &str, key: Option<&str>| MenuItem::with_id(app, id, text, true, key);
     let main = SubmenuBuilder::new(app, "Umbilical")
-        .item(&PredefinedMenuItem::about(app, None, None)?)
+        .item(&item("about", "About Umbilical", None)?)
+        .item(&item("check_update", "Check for Updates…", None)?)
         .separator()
         .item(&item("open", "Open Umbilical…", Some("CmdOrCtrl+O"))?)
         .item(&item("restart_all", "Restart all", None)?)
