@@ -6,10 +6,13 @@ Umbilical is a small tray app for macOS and Windows (Linux builds too, not teste
 - It starts one `claude remote-control` per folder, inside a pseudo terminal.
 - If a process stops, it starts it again. The wait gets longer each time (5s, 10s, … up to 300s). After 10 minutes of good running, the wait goes back to 5s.
 - New folders are added and removed folders are stopped automatically.
-- The tray shows `running/total`. The window shows the state, errors and output of each folder.
-- It starts at login and updates itself from GitHub Releases (stable or nightly).
+- The tray shows `running/total`. The window shows the state, errors and output of each folder, and how many sessions are working now.
+- You choose where it shows (menu bar, Dock, or both) and if the window opens at start.
+- It starts at login and updates itself from GitHub Releases (stable or nightly). **Updates wait until no session is working**, because the restart stops running turns ("Install now" does not wait). "Check for Updates…" is in the tray and app menus.
 - The sessions run in a small background daemon (`Umbilical --daemon`). **Quitting the window/tray app does not stop them.** Use "Stop all sessions and quit" in the tray menu to stop everything.
 - It marks the target folders as trusted in Claude Code, and shows a banner when claude asks "Enable Remote Control? (y/n)" (answer once with **Enable all**).
+- On macOS, the **Permissions** tab shows and asks for the permissions your sessions need (Accessibility, Screen Recording, Automation, …).
+- After a restart, `claude remote-control` reconnects the session it made in each folder, and the chat goes on. A turn that was running is stopped. Sessions made from the web in their own worktree are not started again; their files stay.
 
 ## Install
 
