@@ -12,5 +12,10 @@ fn main() {
         }
         return;
     }
+    // `--permission-states`: print the macOS permission states for the GUI.
+    if umbilical_app::is_permission_states_run() {
+        umbilical_app::print_permission_states();
+        return;
+    }
     umbilical_app::run();
 }

@@ -51,6 +51,15 @@ impl AppState {
     }
 }
 
+/// `umbilical --permission-states`: print the macOS permission states as JSON.
+pub fn print_permission_states() {
+    permissions::print_states();
+}
+
+pub fn is_permission_states_run() -> bool {
+    std::env::args().any(|a| a == permissions::STATES_FLAG)
+}
+
 pub fn run() {
     let config_path = Config::default_path();
     // No config file means first start: the window asks for the root folder,

@@ -127,3 +127,68 @@ pub fn av_request(m: Media) {
         ];
     }
 }
+
+#[repr(C)]
+struct AEDesc {
+    descriptor_type: u32,
+    data_handle: *mut c_void,
+}
+
+#[link(name = "CoreServices", kind = "framework")]
+unsafe extern "C" {
+    fn AECreateDesc(type_code: u32, data: *const c_void, size: isize, result: *mut AEDesc) -> i16;
+    fn AEDisposeDesc(desc: *mut AEDesc) -> i16;
+    fn AEDeterminePermissionToAutomateTarget(
+        target: *const AEDesc,
+        event_class: u32,
+        event_id: u32,
+        ask_user_if_needed: u8,
+    ) -> i32;
+}
+
+const TYPE_APPLICATION_BUNDLE_ID: u32 = u32::from_be_bytes(*b"bund");
+const TYPE_WILD_CARD: u32 = u32::from_be_bytes(*b"****");
+
+/// May Umbilical send Apple Events to the app with this bundle ID?
+/// Never asks the user. The app must be running for a real answer.
+pub fn automation(bundle_id: &str) -> &'static str {
+    let mut desc = AEDesc {
+        descriptor_type: 0,
+        data_handle: std::ptr::null_mut(),
+    };
+    let bytes = bundle_id.as_bytes();
+    unsafe {
+        if AECreateDesc(
+            TYPE_APPLICATION_BUNDLE_ID,
+            bytes.as_ptr().cast(),
+            bytes.len() as isize,
+            &mut desc,
+        ) != 0
+        {
+            return "unknown";
+        }
+        let status =
+            AEDeterminePermissionToAutomateTarget(&desc, TYPE_WILD_CARD, TYPE_WILD_CARD, 0);
+        AEDisposeDesc(&mut desc);
+        match status {
+            0 => "granted",
+            -1743 => "denied",
+            -1744 => "not_asked",
+            // -600: the app does not run.
+            _ => "unknown",
+        }
+    }
+}
+
+/// Send a harmless AppleScript to each app. macOS then asks the user, and
+/// Umbilical shows up in the Automation list (it has no + button).
+pub fn automation_request(apps: &[&str]) {
+    let apps: Vec<String> = apps.iter().map(|a| a.to_string()).collect();
+    std::thread::spawn(move || {
+        for app in apps {
+            let _ = std::process::Command::new("osascript")
+                .args(["-e", &format!("tell application \"{app}\" to get name")])
+                .output();
+        }
+    });
+}

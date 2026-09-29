@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """Draw the Umbilical icons with no extra libraries.
 
-- src-tauri/icons/source.png         : 1024x1024 app icon for macOS and Linux (feed it
-  to `tauri icon`): an orange ring on a dark rounded square
-- src-tauri/icons/source-windows.png : 1024x1024 app icon for Windows: a white ring only
-- src-tauri/icons/tray.png           : 64x64 black ring, a template icon for the macOS
+- src-tauri/icons/source.png     : 1024x1024 app icon, a white ring (feed it to `tauri icon`)
+- src-tauri/icons/tray.png       : 64x64 black ring, a template icon for the macOS
   menu bar (macOS makes it black or white)
-- src-tauri/icons/tray-white.png     : 64x64 white ring for the Windows and Linux tray
+- src-tauri/icons/tray-white.png : 64x64 white ring for the Windows and Linux tray
 """
 import math
 import struct
@@ -33,18 +31,13 @@ def cover(d, aa):
     return max(0.0, min(1.0, 0.5 - d / aa))
 
 
-def sd_round_box(x, y, half, r):
-    qx, qy = abs(x) - half + r, abs(y) - half + r
-    return math.hypot(max(qx, 0), max(qy, 0)) + min(max(qx, qy), 0) - r
-
-
 def ring(x, y):
     """Distance to a ring in the middle, in unit space (-1..1)."""
     return abs(math.hypot(x, y) - 0.42) - 0.09
 
 
-def draw(size, app_bg, rgb=(0, 0, 0), zoom=1.0):
-    """app_bg: orange ring on the dark square. Else only the ring in `rgb`.
+def draw(size, rgb, zoom=1.0):
+    """Only the ring in `rgb`, on a clear background.
     zoom > 1 draws the ring bigger, so it fills more of the image."""
     px = [0] * (size * size * 4)
     aa = 2.0 / size / zoom
@@ -54,32 +47,17 @@ def draw(size, app_bg, rgb=(0, 0, 0), zoom=1.0):
             x = ((i + 0.5) / size * 2 - 1) / zoom
             g = cover(ring(x, y), aa)
             k = (j * size + i) * 4
-            if app_bg:
-                bg = cover(sd_round_box(x, y, 0.80, 0.22), aa)
-                if bg == 0:
-                    continue
-                t = (y + 1) / 2
-                base = (int(24 + 10 * t), int(30 + 12 * t), int(46 + 22 * t))
-                fg = (236, 128, 84)
-                mixed = [round(base[c] * (1 - g) + fg[c] * g) for c in range(3)]
-                px[k:k + 4] = mixed + [round(255 * bg)]
-            else:
-                px[k:k + 4] = list(rgb) + [round(255 * g)]
+            px[k:k + 4] = list(rgb) + [round(255 * g)]
     return px
 
 
-def ring(x, y):
-    """Distance to a ring in the middle, in unit space (-1..1)."""
-    return abs(math.hypot(x, y) - 0.42) - 0.09
-
-
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 OUT.mkdir(parents=True, exist_ok=True)
 files = {
-    "source.png": draw(1024, True),
-    "source-windows.png": draw(1024, False, WHITE, zoom=1.8),
-    "tray.png": draw(64, False, zoom=1.8),
-    "tray-white.png": draw(64, False, WHITE, zoom=1.8),
+    "source.png": draw(1024, WHITE, zoom=1.8),
+    "tray.png": draw(64, BLACK, zoom=1.8),
+    "tray-white.png": draw(64, WHITE, zoom=1.8),
 }
 for name, px in files.items():
     size = int((len(px) // 4) ** 0.5)

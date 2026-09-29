@@ -14,7 +14,7 @@ export function Header() {
   return (
     <header className="flex items-center gap-4 border-b bg-card px-4 py-2">
       <div className="flex items-center gap-2 text-sm font-semibold">
-        <span aria-hidden className="size-4 rounded-full border-[3px] border-primary" />
+        <span aria-hidden className="size-4 rounded-full border-[3px] border-foreground" />
         Umbilical
       </div>
       <TabsList>

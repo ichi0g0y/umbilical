@@ -29,12 +29,23 @@ pub fn request(_id: &str) -> Result<(), String> {
     Err("permissions are only on macOS".into())
 }
 
+/// Run as `umbilical --permission-states`: print the states and exit.
+pub const STATES_FLAG: &str = "--permission-states";
+
 #[cfg(target_os = "macos")]
-pub use mac::{list, request};
+pub use mac::{list, print_states, request};
+
+#[cfg(not(target_os = "macos"))]
+pub fn print_states() {
+    println!("{{}}");
+}
 
 #[cfg(target_os = "macos")]
 mod mac {
-    use super::Permission;
+    use std::collections::HashMap;
+    use std::process::Command;
+
+    use super::{Permission, STATES_FLAG};
     use crate::permissions_ffi as ffi;
 
     struct Def {
@@ -78,7 +89,7 @@ mod mac {
         Def {
             id: "automation",
             name: "Automation",
-            why: "Control other apps with AppleScript. macOS asks once for each app.",
+            why: "Control other apps with AppleScript. macOS asks once for each app. \"Allow…\" asks for Finder and System Events. The state shown is for Finder.",
             pane: "Privacy_Automation",
             important: false,
         },
@@ -98,10 +109,32 @@ mod mac {
         },
     ];
 
+    /// States read in a new process: macOS tells a running process some changes
+    /// (Screen Recording) only after a restart.
+    fn fresh_states() -> HashMap<String, String> {
+        let from_child = std::env::current_exe().ok().and_then(|exe| {
+            let out = Command::new(exe).arg(STATES_FLAG).output().ok()?;
+            serde_json::from_slice::<HashMap<String, String>>(&out.stdout).ok()
+        });
+        from_child.unwrap_or_else(|| {
+            DEFS.iter()
+                .map(|d| (d.id.to_string(), state(d.id).0.to_string()))
+                .collect()
+        })
+    }
+
+    /// For `umbilical --permission-states`: print the states as JSON.
+    pub fn print_states() {
+        let states: HashMap<&str, &str> = DEFS.iter().map(|d| (d.id, state(d.id).0)).collect();
+        println!("{}", serde_json::to_string(&states).unwrap_or_default());
+    }
+
     pub fn list() -> Vec<Permission> {
+        let fresh = fresh_states();
         DEFS.iter()
             .map(|d| {
-                let (state, can_prompt) = state(d.id);
+                let (own, can_prompt) = state(d.id);
+                let state = fresh.get(d.id).map_or(own, |s| static_state(s));
                 Permission {
                     id: d.id,
                     name: d.name,
@@ -114,6 +147,15 @@ mod mac {
             .collect()
     }
 
+    fn static_state(s: &str) -> &'static str {
+        match s {
+            "granted" => "granted",
+            "denied" => "denied",
+            "not_asked" => "not_asked",
+            _ => "unknown",
+        }
+    }
+
     fn state(id: &str) -> (&'static str, bool) {
         let yes_no = |b: bool| if b { "granted" } else { "denied" };
         match id {
@@ -123,6 +165,8 @@ mod mac {
             "full_disk" => (yes_no(ffi::full_disk_access()), false),
             "camera" => (ffi::av_status(ffi::Media::Video), true),
             "microphone" => (ffi::av_status(ffi::Media::Audio), true),
+            // Finder always runs, so it gives a real answer.
+            "automation" => (ffi::automation("com.apple.finder"), true),
             _ => ("unknown", false),
         }
     }
@@ -134,7 +178,9 @@ mod mac {
             .iter()
             .find(|d| d.id == id)
             .ok_or_else(|| format!("unknown permission {id}"))?;
-        let (state, can_prompt) = state(id);
+        let can_prompt = state(id).1;
+        let fresh = fresh_states();
+        let state = fresh.get(id).map_or("unknown", |s| static_state(s));
         if can_prompt && state != "denied" {
             match id {
                 "accessibility" => ffi::accessibility_prompt(),
@@ -142,6 +188,7 @@ mod mac {
                 "input" => ffi::input_monitoring_request(),
                 "camera" => ffi::av_request(ffi::Media::Video),
                 "microphone" => ffi::av_request(ffi::Media::Audio),
+                "automation" => ffi::automation_request(&["Finder", "System Events"]),
                 _ => {}
             }
             return Ok(());
