@@ -46,5 +46,9 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: Check and build the UI (the app embeds ui/dist)
+        run: bun run ui:check && bun run ui:build
       - run: cargo clippy -p umbilical --all-targets -- -D warnings
       - run: cargo test -p umbilical

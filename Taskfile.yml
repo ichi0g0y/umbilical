@@ -11,6 +11,8 @@ tasks:
   check:
     desc: Run local checks.
     cmds:
+      - bun run ui:check
+      - bun run ui:build
       - cargo fmt --all -- --check
       - cargo clippy --workspace --all-targets -- -D warnings
       - cargo test --workspace

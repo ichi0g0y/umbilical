@@ -91,7 +91,7 @@ Tools: Rust (stable), [Bun](https://bun.sh), and optionally [Task](https://taskf
 ```sh
 bun install
 task dev      # run the app (uses your real config!)
-task check    # fmt, clippy, tests
+task check    # UI build, fmt, clippy, tests
 task build    # build a local .app / installer
 ```
 
@@ -99,7 +99,7 @@ Layout:
 
 - `crates/umbilical-core`: the supervisor (config, folder scan, pty processes, restarts, trust) and the daemon (`daemon.rs`: TCP on 127.0.0.1 + token in `~/.umbilical/daemon.json`). No GUI code.
 - `src-tauri`: the Tauri 2 app (tray, window, commands, updater). `umbilical --daemon` runs only the daemon; the GUI starts it when needed and replaces it when the binary is newer.
-- `ui`: the web UI (plain HTML/CSS/JS, no build step).
+- `ui`: the window UI. React + TypeScript + [shadcn/ui](https://ui.shadcn.com) + Tailwind CSS, state in [Jotai](https://jotai.org), built with Vite. `bun run --cwd ui dev` serves it for `tauri dev`; `bun run ui:build` writes `ui/dist`, which the app embeds.
 
 ## Releases
 
