@@ -40,9 +40,6 @@ export const dirtyAtom = atom((get) => {
   return !!saved && !!draft && JSON.stringify(saved) !== JSON.stringify(draft);
 });
 
-/** Folder chosen in "Per-folder settings". */
-export const overrideKeyAtom = atom<string | null>(null);
-
 export const updateAtom = atom<UpdateView | null>(null);
 export const appInfoAtom = atom<AppInfo | null>(null);
 export const permissionsAtom = atom<Permission[]>([]);

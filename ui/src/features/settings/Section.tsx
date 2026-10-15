@@ -5,7 +5,7 @@ export function Section({ title, description, children, id }: { title: string; d
   return (
     <Card id={id} className="scroll-mt-4 gap-4 py-4">
       <CardHeader className="px-4">
-        <CardTitle className="text-sm">{title}</CardTitle>
+        <CardTitle className="text-[15px]">{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-4">{children}</CardContent>

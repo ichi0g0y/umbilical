@@ -104,7 +104,7 @@ export function SetupView() {
         </Card>
         <Card className="gap-3 border-wait/50 py-5">
           <CardHeader className="px-5">
-            <CardTitle className="text-sm">Before you start</CardTitle>
+            <CardTitle className="text-[15px]">Before you start</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 px-5">
             <ul className="list-disc space-y-1 pl-5">

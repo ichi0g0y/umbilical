@@ -5,51 +5,59 @@
 
 /* Umbilical colors. The accent is the orange of the app icon. */
 :root {
-  --radius: 0.5rem;
-  --background: #f6f7f9;
-  --foreground: #1b1f27;
-  --card: #ffffff;
-  --card-foreground: #1b1f27;
-  --popover: #ffffff;
-  --popover-foreground: #1b1f27;
+  --radius: 0.75rem;
+  --background: #f3f1ee;
+  --foreground: #26231f;
+  --card: #fffdfb;
+  --card-foreground: #26231f;
+  --popover: #fffdfb;
+  --popover-foreground: #26231f;
   --primary: #e0784f;
   --primary-foreground: #ffffff;
-  --secondary: #f1f3f6;
-  --secondary-foreground: #1b1f27;
-  --muted: #f1f3f6;
-  --muted-foreground: #6b7280;
+  --secondary: #efebe6;
+  --secondary-foreground: #26231f;
+  --muted: #f0ece7;
+  --muted-foreground: #756f68;
   --accent: #fbeee8;
-  --accent-foreground: #1b1f27;
-  --destructive: #d64545;
-  --border: #e3e6eb;
-  --input: #e3e6eb;
+  --accent-foreground: #26231f;
+  --destructive: #d4564e;
+  --border: #e5e0d9;
+  --input: #e5e0d9;
   --ring: #e0784f;
   --ok: #1f9d55;
-  --wait: #c98a00;
-  --bad: #d64545;
-  --off: #9aa1ab;
+  --wait: #d08c21;
+  --bad: #d4564e;
+  --off: #a8a29a;
+  /* Panels float on a soft shadow instead of sitting behind a hard line. */
+  --soft-shadow: 0 1px 2px rgb(38 35 31 / 5%), 0 10px 28px -14px rgb(38 35 31 / 20%);
   color-scheme: light;
 }
 
 .dark {
-  --background: #14171d;
-  --foreground: #e6e8ec;
-  --card: #1b1f27;
-  --card-foreground: #e6e8ec;
-  --popover: #1b1f27;
-  --popover-foreground: #e6e8ec;
+  --background: #1a1816;
+  --foreground: #ece8e2;
+  --card: #24211d;
+  --card-foreground: #ece8e2;
+  --popover: #24211d;
+  --popover-foreground: #ece8e2;
   --primary: #ec8054;
   --primary-foreground: #ffffff;
-  --secondary: #242a34;
-  --secondary-foreground: #e6e8ec;
-  --muted: #11141a;
-  --muted-foreground: #9099a8;
-  --accent: #2e241f;
-  --accent-foreground: #e6e8ec;
-  --destructive: #e05a5a;
-  --border: #2b313c;
-  --input: #2b313c;
+  --secondary: #2b2722;
+  --secondary-foreground: #ece8e2;
+  --muted: #171513;
+  --muted-foreground: #a39d94;
+  --accent: #352a23;
+  --accent-foreground: #ece8e2;
+  --destructive: #e0635b;
+  --border: #342f2a;
+  --input: #342f2a;
   --ring: #ec8054;
+  /* Brighter on the dark card, so the dots stay easy to read. */
+  --ok: #3fb574;
+  --wait: #e0a33a;
+  --bad: #e0635b;
+  --off: #8a847c;
+  --soft-shadow: 0 1px 2px rgb(0 0 0 / 50%), 0 10px 28px -16px rgb(0 0 0 / 70%);
   color-scheme: dark;
 }
 
@@ -80,6 +88,7 @@
   --color-wait: var(--wait);
   --color-bad: var(--bad);
   --color-off: var(--off);
+  --shadow-soft: var(--soft-shadow);
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }

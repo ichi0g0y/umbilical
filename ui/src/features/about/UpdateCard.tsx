@@ -22,7 +22,7 @@ export function UpdateCard() {
   return (
     <Card className="gap-3 py-4">
       <CardHeader className="px-4">
-        <CardTitle className="text-sm">Update</CardTitle>
+        <CardTitle className="text-[15px]">Update</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 px-4">
         <p className="text-muted-foreground">{statusText(u)}</p>
