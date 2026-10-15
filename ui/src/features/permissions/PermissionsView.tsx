@@ -46,7 +46,7 @@ export function PermissionsView() {
     <div className="mx-auto max-w-3xl p-4">
       <Card className="gap-2 py-4">
         <CardHeader className="px-4">
-          <CardTitle className="text-sm">Permissions</CardTitle>
+          <CardTitle className="text-[15px]">Permissions</CardTitle>
           <CardDescription>
             Claude sessions run inside Umbilical, so macOS uses Umbilical's permissions for them. Allow what your sessions need, for example Accessibility and
             Screen Recording for screen control. After a change, use <b>Restart all</b>, so running sessions get it.

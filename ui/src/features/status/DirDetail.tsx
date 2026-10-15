@@ -1,11 +1,9 @@
-import { useSetAtom } from "jotai";
-import { Play, RotateCw, Square } from "lucide-react";
-import type { ReactNode } from "react";
+import { ChevronRight, Play, RotateCw, Square } from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { FolderSettingsDialog } from "@/features/overrides/FolderSettingsDialog";
 import { api, type DirAction, type DirStatus } from "@/lib/api";
 import { stateText } from "@/lib/format";
-import { overrideKeyAtom, tabAtom } from "@/state/atoms";
 import { AttentionNote } from "./AttentionNote";
 import { LogView } from "./LogView";
 
@@ -23,14 +21,10 @@ function ActionButton({
   children: ReactNode;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button size="icon" variant="outline" aria-label={label} disabled={disabled} onClick={() => api.dirAction(dir.key, action)}>
-          {children}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
+    <Button size="sm" variant="outline" disabled={disabled} onClick={() => api.dirAction(dir.key, action)}>
+      {children}
+      {label}
+    </Button>
   );
 }
 
@@ -44,28 +38,36 @@ function Fact({ label, children, mono }: { label: string; children: ReactNode; m
 }
 
 export function DirDetail({ dir: d }: { dir: DirStatus }) {
-  const setTab = useSetAtom(tabAtom);
-  const setOverrideKey = useSetAtom(overrideKeyAtom);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const running = d.state === "running";
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-semibold">{d.name}</h2>
-          <p className="truncate font-mono text-xs text-muted-foreground">{d.path}</p>
-        </div>
-        <div className="flex gap-1.5">
-          <ActionButton dir={d} action="start" label="Start" disabled={running || d.state === "disabled"}>
-            <Play />
-          </ActionButton>
-          <ActionButton dir={d} action="restart" label="Restart" disabled={d.state === "disabled"}>
-            <RotateCw />
-          </ActionButton>
-          <ActionButton dir={d} action="stop" label="Stop" disabled={!running && d.state !== "waiting"}>
-            <Square />
-          </ActionButton>
-        </div>
+      <div className="min-w-0">
+        <h2 className="truncate text-base font-semibold">{d.name}</h2>
+        <p className="truncate font-mono text-xs text-muted-foreground">{d.path}</p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <ActionButton dir={d} action="start" label="Start" disabled={running || d.state === "disabled"}>
+          <Play />
+        </ActionButton>
+        <ActionButton dir={d} action="restart" label="Restart" disabled={d.state === "disabled"}>
+          <RotateCw />
+        </ActionButton>
+        <ActionButton dir={d} action="stop" label="Stop" disabled={!running && d.state !== "waiting"}>
+          <Square />
+        </ActionButton>
+        <span aria-hidden className="mx-1 h-5 w-px bg-border" />
+        <Button size="sm" variant="outline" onClick={() => api.revealPath(d.log_path)}>
+          Open log file
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => api.openPath(d.key)}>
+          Show folder
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setSettingsOpen(true)}>
+          Settings…
+        </Button>
       </div>
 
       {d.attention && <AttentionNote dir={d} />}
@@ -84,37 +86,30 @@ export function DirDetail({ dir: d }: { dir: DirStatus }) {
             <span className="text-muted-foreground">not seen yet</span>
           )}
         </Fact>
-        <Fact label="Spawn">{d.spawn === d.effective_spawn ? d.spawn : `${d.effective_spawn} (set: ${d.spawn}, no git)`}</Fact>
-        <Fact label="Restarts">{d.restarts}</Fact>
-        <Fact label="Last exit">{d.last_exit ?? "—"}</Fact>
-        <Fact label="Last error" mono>
-          {d.last_error ?? "—"}
-        </Fact>
-        <Fact label="Command" mono>
-          {d.command ?? "—"}
-        </Fact>
       </dl>
 
-      <div className="flex items-center gap-2">
-        <h3 className="flex-1 font-semibold">Output</h3>
-        <Button size="sm" variant="outline" onClick={() => api.revealPath(d.log_path)}>
-          Open log file
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => api.openPath(d.key)}>
-          Show folder
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            setOverrideKey(d.key);
-            setTab("settings");
-          }}
-        >
-          Folder settings
-        </Button>
-      </div>
+      {/* Open when something went wrong, so an error is never hidden. */}
+      <details className="group" open={!!d.last_error}>
+        <summary className="flex w-fit cursor-pointer items-center gap-1 text-muted-foreground hover:text-foreground">
+          <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />
+          Details
+        </summary>
+        <dl className="mt-2 grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1">
+          <Fact label="Spawn">{d.spawn === d.effective_spawn ? d.spawn : `${d.effective_spawn} (set: ${d.spawn}, no git)`}</Fact>
+          <Fact label="Restarts">{d.restarts}</Fact>
+          <Fact label="Last exit">{d.last_exit ?? "—"}</Fact>
+          <Fact label="Last error" mono>
+            {d.last_error ?? "—"}
+          </Fact>
+          <Fact label="Command" mono>
+            {d.command ?? "—"}
+          </Fact>
+        </dl>
+      </details>
+
+      <h3 className="font-semibold">Output</h3>
       <LogView dirKey={d.key} />
+      <FolderSettingsDialog dir={d} open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }

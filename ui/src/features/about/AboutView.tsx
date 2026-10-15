@@ -24,7 +24,7 @@ export function AboutView() {
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-4">
       <Card className="gap-3 py-4">
         <CardHeader className="px-4">
-          <CardTitle className="text-sm">
+          <CardTitle className="text-[15px]">
             Umbilical <span className="font-normal text-muted-foreground">{info && `v${info.version}`}</span>
           </CardTitle>
         </CardHeader>
@@ -57,7 +57,7 @@ export function AboutView() {
       <UpdateCard />
       <Card className="gap-3 py-4">
         <CardHeader className="px-4">
-          <CardTitle className="text-sm">Support</CardTitle>
+          <CardTitle className="text-[15px]">Support</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-3 px-4">
           <p className="flex-1">Umbilical is free and stays free. If it helps you, buy me a coffee.</p>
@@ -69,7 +69,7 @@ export function AboutView() {
       </Card>
       <Card className="gap-2 border-wait/50 py-4">
         <CardHeader className="px-4">
-          <CardTitle className="text-sm">Security</CardTitle>
+          <CardTitle className="text-[15px]">Security</CardTitle>
         </CardHeader>
         <CardContent className="px-4">
           Sessions run with the permission mode you choose (default <code>bypassPermissions</code>). Anyone who can use your Claude account can run commands in
