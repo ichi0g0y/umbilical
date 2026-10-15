@@ -32,6 +32,7 @@ pub struct Settings {
     /// The spawn mode that is really used. `worktree` needs git, so it falls back to `same-dir`.
     pub effective_spawn: String,
     pub capacity: Option<u32>,
+    pub skip_first_session: bool,
     pub extra_args: Vec<String>,
     pub env: BTreeMap<String, String>,
 }
@@ -51,6 +52,10 @@ impl Settings {
         if let Some(capacity) = self.capacity {
             args.push("--capacity".into());
             args.push(capacity.to_string());
+        }
+        // Session mode needs the first session: it ends when that session ends.
+        if self.skip_first_session && self.effective_spawn != "session" {
+            args.push("--no-create-session-in-dir".into());
         }
         args.extend(self.extra_args.iter().cloned());
         args
@@ -152,6 +157,7 @@ fn resolve(config: &Config, o: &DirOverride, path: &Path) -> Settings {
         spawn,
         effective_spawn,
         capacity: o.capacity.or(config.capacity),
+        skip_first_session: o.skip_first_session.unwrap_or(config.skip_first_session),
         extra_args: o
             .extra_args
             .clone()
@@ -253,6 +259,31 @@ mod tests {
         let args = t.settings.args(&t.name);
         assert!(args.windows(2).any(|w| w == ["--capacity", "4"]));
         assert!(args.windows(2).any(|w| w == ["--name", "b"]));
+    }
+
+    #[test]
+    fn skip_first_session() {
+        const FLAG: &str = "--no-create-session-in-dir";
+        let (_tmp, mut config) = setup();
+        let has_flag = |config: &Config| {
+            let t = &discover(config)[0];
+            t.settings.args(&t.name).iter().any(|a| a == FLAG)
+        };
+        // On by default.
+        assert!(has_flag(&config));
+        // Session mode needs the first session.
+        config.spawn = "session".into();
+        assert!(!has_flag(&config));
+        config.spawn = "worktree".into();
+        let alpha = discover(&config)[0].key.clone();
+        config.overrides.insert(
+            alpha,
+            DirOverride {
+                skip_first_session: Some(false),
+                ..Default::default()
+            },
+        );
+        assert!(!has_flag(&config));
     }
 
     #[test]

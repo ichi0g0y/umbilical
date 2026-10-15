@@ -46,6 +46,9 @@ pub struct Config {
     pub spawn: String,
     /// `--capacity`. `None` means the claude default.
     pub capacity: Option<u32>,
+    /// Do not make a session in the folder when `claude remote-control`
+    /// starts (`--no-create-session-in-dir`). Spawn mode `session` ignores it.
+    pub skip_first_session: bool,
     pub extra_args: Vec<String>,
     pub env: BTreeMap<String, String>,
 
@@ -90,6 +93,7 @@ impl Default for Config {
             permission_mode: "bypassPermissions".into(),
             spawn: "worktree".into(),
             capacity: None,
+            skip_first_session: true,
             extra_args: Vec::new(),
             env: BTreeMap::new(),
             auto_trust: true,
@@ -143,6 +147,7 @@ pub struct DirOverride {
     pub permission_mode: Option<String>,
     pub spawn: Option<String>,
     pub capacity: Option<u32>,
+    pub skip_first_session: Option<bool>,
     pub extra_args: Option<Vec<String>>,
     /// Added on top of the global env.
     pub env: BTreeMap<String, String>,

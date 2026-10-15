@@ -12,7 +12,8 @@ Umbilical is a small tray app for macOS and Windows (Linux builds too, not teste
 - The sessions run in a small background daemon (`Umbilical --daemon`). **Quitting the window/tray app does not stop them.** Use "Stop all sessions and quit" in the tray menu to stop everything.
 - It marks the target folders as trusted in Claude Code, and shows a banner when claude asks "Enable Remote Control? (y/n)" (answer once with **Enable all**).
 - On macOS, the **Permissions** tab shows and asks for the permissions your sessions need (Accessibility, Screen Recording, Automation, …).
-- After a restart, `claude remote-control` reconnects the session it made in each folder, and the chat goes on. A turn that was running is stopped. Sessions made from the web in their own worktree are not started again; their files stay.
+- By default, `claude remote-control` does not make a session in the folder when it starts (`--no-create-session-in-dir`). You start sessions from claude.ai or the app. Turn off **Do not make a session at start** in Settings (or per folder) to get one session at start again. Session mode always makes it.
+- When a session is made at start, `claude remote-control` reconnects it after a restart, and the chat goes on. A turn that was running is stopped. Sessions made from the web in their own worktree are not started again; their files stay.
 
 ## Install
 
@@ -61,6 +62,7 @@ scan_interval_secs = 5
 claude_bin = ""                   # empty: ~/.local/bin/claude or PATH
 permission_mode = "bypassPermissions"
 spawn = "worktree"                # same-dir | worktree | session (worktree needs git)
+skip_first_session = true         # no session at start (--no-create-session-in-dir); not used with spawn = "session"
 extra_args = []
 
 backoff_min_secs = 5
