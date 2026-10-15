@@ -4,6 +4,7 @@ import { CheckField, Field, NumberField, SelectField, TextAreaField, TextField }
 import { type DirOverride, PERMISSION_MODES, SPAWN_MODES } from "@/lib/api";
 import { envText, parseEnv, toLines } from "@/lib/format";
 import { useDraftConfig, useEditConfig } from "@/hooks/useConfig";
+import { firstSessionHint } from "@/features/settings/DefaultsCard";
 import { snapshotAtom } from "@/state/atoms";
 
 /** Drop empty values, so the file keeps only real overrides. */
@@ -14,6 +15,7 @@ function clean(o: DirOverride): DirOverride | null {
   if (o.permission_mode) out.permission_mode = o.permission_mode;
   if (o.spawn) out.spawn = o.spawn;
   if (o.capacity && o.capacity > 0) out.capacity = o.capacity;
+  if (typeof o.skip_first_session === "boolean") out.skip_first_session = o.skip_first_session;
   if (o.claude_bin?.trim()) out.claude_bin = o.claude_bin.trim();
   if (Array.isArray(o.extra_args)) out.extra_args = o.extra_args;
   if (o.env && Object.keys(o.env).length) out.env = o.env;
@@ -26,6 +28,8 @@ export function OverrideFields({ dirKey }: { dirKey: string }) {
   const snapshot = useAtomValue(snapshotAtom);
   const o = config.overrides[dirKey] ?? {};
   const dir = snapshot.dirs.find((d) => d.key === dirKey);
+  const spawn = o.spawn ?? config.spawn;
+  const skipText = (skip: boolean) => (skip ? "do not make one" : "make one");
 
   const set = (change: (o: DirOverride) => void) =>
     edit((c) => {
@@ -56,6 +60,18 @@ export function OverrideFields({ dirKey }: { dirKey: string }) {
         <Field label="Spawn mode">
           <SelectField value={o.spawn ?? null} options={SPAWN_MODES} inherit={`default (${config.spawn})`} onChange={(v) => set((x) => void (x.spawn = v))} />
         </Field>
+        <Field label="First session" hint={firstSessionHint(spawn)}>
+          <SelectField
+            value={o.skip_first_session == null ? null : o.skip_first_session ? "skip" : "create"}
+            options={[
+              { value: "skip", label: skipText(true) },
+              { value: "create", label: skipText(false) },
+            ]}
+            inherit={`default (${skipText(config.skip_first_session)})`}
+            disabled={spawn === "session"}
+            onChange={(v) => set((x) => void (x.skip_first_session = v == null ? null : v === "skip"))}
+          />
+        </Field>
         <Field label="Capacity">
           <NumberField
             min={1}
@@ -64,7 +80,7 @@ export function OverrideFields({ dirKey }: { dirKey: string }) {
             onChange={(v) => set((x) => void (x.capacity = v))}
           />
         </Field>
-        <Field label="claude binary" className="col-span-2">
+        <Field label="claude binary">
           <TextField mono value={o.claude_bin ?? ""} placeholder="default" onChange={(v) => set((x) => void (x.claude_bin = v))} />
         </Field>
       </div>

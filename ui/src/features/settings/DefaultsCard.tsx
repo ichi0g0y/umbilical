@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { Field, NumberField, SelectField, TextAreaField, TextField } from "@/components/fields";
+import { CheckField, Field, NumberField, SelectField, TextAreaField, TextField } from "@/components/fields";
 import { PERMISSION_MODES, SPAWN_MODES } from "@/lib/api";
 import { envText, parseEnv, toLines } from "@/lib/format";
 import { useDraftConfig, useEditConfig } from "@/hooks/useConfig";
@@ -36,6 +36,11 @@ export function DefaultsCard() {
           />
         </Field>
       </div>
+      <Field label="First session" hint={firstSessionHint(config.spawn)}>
+        <CheckField checked={config.skip_first_session} disabled={config.spawn === "session"} onChange={(v) => edit((c) => void (c.skip_first_session = v))}>
+          Do not make a session at start
+        </CheckField>
+      </Field>
       <Field label="Extra arguments (one per line)">
         <TextAreaField value={config.extra_args} format={(v) => v.join("\n")} parse={toLines} onChange={(v) => edit((c) => void (c.extra_args = v))} />
       </Field>
@@ -44,4 +49,11 @@ export function DefaultsCard() {
       </Field>
     </Section>
   );
+}
+
+/** `--no-create-session-in-dir`. Session mode needs the first session, so it does not use it. */
+export function firstSessionHint(spawn: string) {
+  return spawn === "session"
+    ? "Not used in session mode: that mode needs the first session."
+    : "claude remote-control makes one session in the folder when it starts. Turn this on to start sessions only from claude.ai or the app.";
 }

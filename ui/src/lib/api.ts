@@ -45,6 +45,7 @@ export interface DirOverride {
   permission_mode?: string | null;
   spawn?: string | null;
   capacity?: number | null;
+  skip_first_session?: boolean | null;
   extra_args?: string[] | null;
   env?: Record<string, string>;
 }
@@ -68,6 +69,7 @@ export interface Config {
   permission_mode: string;
   spawn: string;
   capacity: number | null;
+  skip_first_session: boolean;
   extra_args: string[];
   env: Record<string, string>;
   auto_trust: boolean;

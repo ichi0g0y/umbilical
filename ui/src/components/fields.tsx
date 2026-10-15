@@ -94,10 +94,11 @@ export function SelectField(props: {
   options: { value: string; label: string }[] | string[];
   onChange: (v: string | null) => void;
   inherit?: string;
+  disabled?: boolean;
 }) {
   const options = props.options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
   return (
-    <Select value={props.value ?? INHERIT} onValueChange={(v) => props.onChange(v === INHERIT ? null : v)}>
+    <Select value={props.value ?? INHERIT} disabled={props.disabled} onValueChange={(v) => props.onChange(v === INHERIT ? null : v)}>
       <SelectTrigger className="w-full">
         <SelectValue />
       </SelectTrigger>
@@ -113,11 +114,21 @@ export function SelectField(props: {
   );
 }
 
-export function CheckField({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: ReactNode }) {
+export function CheckField({
+  checked,
+  onChange,
+  disabled,
+  children,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
   const id = useId();
   return (
     <div className="flex items-center gap-2">
-      <Checkbox id={id} checked={checked} onCheckedChange={(v) => onChange(v === true)} />
+      <Checkbox id={id} checked={checked} disabled={disabled} onCheckedChange={(v) => onChange(v === true)} />
       <Label htmlFor={id} className="font-normal">
         {children}
       </Label>
