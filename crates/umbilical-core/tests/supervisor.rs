@@ -10,7 +10,12 @@ use umbilical_core::config::Config;
 use umbilical_core::{Command, RunState, Snapshot, Supervisor};
 
 /// Prints its args and a URL, then sleeps. Exits early if `$EXIT_AFTER` is set.
+/// With `$ALREADY_SERVED`, fails like a folder that an old registration still holds.
 const FAKE: &str = r#"#!/bin/sh
+if [ -n "$ALREADY_SERVED" ]; then
+  echo "Error: This folder is already served by a terminal \`claude remote-control\` on this device. Stop it first."
+  exit 1
+fi
 echo "fake claude $*"
 echo "Open https://claude.ai/code/session_$(basename "$PWD")"
 if [ -n "$EXIT_AFTER" ]; then sleep "$EXIT_AFTER"; echo "bye"; exit 3; fi
@@ -166,6 +171,25 @@ fn backoff_after_crash() {
     );
     assert!(d.next_restart_at.is_some());
     wait_for(&sup, "restarted a few times", |s| s.dirs[0].restarts >= 2);
+    sup.shutdown();
+}
+
+#[test]
+fn already_served_is_a_wait_not_a_crash() {
+    let (_tmp, config_path) = setup(|c| {
+        c.env.insert("ALREADY_SERVED".into(), "1".into());
+    });
+    let sup = Supervisor::start(config_path);
+    let s = wait_for(&sup, "waiting for the old registration", |s| {
+        s.dirs
+            .iter()
+            .any(|d| d.state == RunState::Waiting && d.already_served)
+    });
+    let d = &s.dirs[0];
+    assert!(d.attention.is_none());
+    assert!(d.next_restart_at.is_some());
+    // It keeps trying.
+    wait_for(&sup, "tried again", |s| s.dirs[0].restarts >= 1);
     sup.shutdown();
 }
 

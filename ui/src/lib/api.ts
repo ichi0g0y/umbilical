@@ -17,6 +17,8 @@ export interface DirStatus {
   last_exit: string | null;
   last_error: string | null;
   attention: Attention | null;
+  /** Waiting because an old registration still holds the folder. Not an error. */
+  already_served: boolean;
   session_url: string | null;
   command: string | null;
   spawn: string;

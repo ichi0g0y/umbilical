@@ -22,6 +22,9 @@ use crate::env::{child_path, find_claude, launcher};
 
 const TICK: Duration = Duration::from_millis(500);
 const STOP_GRACE: Duration = Duration::from_secs(3);
+/// Retry this often while an old registration still holds the folder.
+/// The server drops it after a few minutes; a growing backoff would wait too long.
+const ALREADY_SERVED_RETRY: Duration = Duration::from_secs(30);
 
 #[derive(Debug)]
 pub enum Command {
@@ -72,6 +75,10 @@ pub struct DirStatus {
     pub last_exit: Option<String>,
     pub last_error: Option<String>,
     pub attention: Option<Attention>,
+    /// Waiting because an old registration still holds the folder (see
+    /// [`crate::detect::Signal::AlreadyServed`]). Not an error.
+    #[serde(default)]
+    pub already_served: bool,
     pub session_url: Option<String>,
     pub command: Option<String>,
     pub spawn: String,
@@ -542,7 +549,10 @@ impl Worker {
                 let uptime = p.started.elapsed();
                 e.proc = None;
                 e.started_unix = None;
-                let tail = e.output.lock().unwrap().tail(3);
+                let (tail, already_served) = {
+                    let out = e.output.lock().unwrap();
+                    (out.tail(3), out.already_served)
+                };
                 if config.debug {
                     let last = e.output.lock().unwrap().tail(8).join(" | ");
                     app_log(
@@ -555,12 +565,23 @@ impl Worker {
                 if uptime >= Duration::from_secs(config.stable_reset_secs) {
                     e.backoff = Duration::from_secs(config.backoff_min_secs);
                 }
-                let wait = e.backoff;
-                e.backoff = (e.backoff * 2).min(Duration::from_secs(config.backoff_max_secs));
+                let wait = if already_served {
+                    // Not a crash: keep the backoff as it is and try again soon.
+                    ALREADY_SERVED_RETRY.min(Duration::from_secs(config.backoff_max_secs))
+                } else {
+                    let wait = e.backoff;
+                    e.backoff = (e.backoff * 2).min(Duration::from_secs(config.backoff_max_secs));
+                    wait
+                };
                 e.next_start = Some(now + wait);
                 e.next_start_unix = Some(unix_now() + wait.as_secs());
+                let why = if already_served {
+                    "an old registration still holds the folder, "
+                } else {
+                    ""
+                };
                 let msg = format!(
-                    "{}: {exit} after {}s, restart in {}s",
+                    "{}: {exit} after {}s, {why}restart in {}s",
                     e.target.name,
                     uptime.as_secs(),
                     wait.as_secs()
@@ -643,6 +664,7 @@ impl Worker {
                     last_exit: e.last_exit.clone(),
                     last_error: e.last_error.clone(),
                     attention: out.attention,
+                    already_served: out.already_served && state == RunState::Waiting,
                     session_url: out.session_url.clone(),
                     command: e.proc.as_ref().map(|p| p.spec.display()),
                     spawn: e.target.settings.spawn.clone(),

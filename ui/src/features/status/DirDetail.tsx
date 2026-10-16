@@ -1,5 +1,6 @@
 import { ChevronRight, Play, RotateCw, Square } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { StatusDot } from "@/components/StatusDot";
 import { Button } from "@/components/ui/button";
 import { FolderSettingsDialog } from "@/features/overrides/FolderSettingsDialog";
 import { api, type DirAction, type DirStatus } from "@/lib/api";
@@ -71,6 +72,15 @@ export function DirDetail({ dir: d }: { dir: DirStatus }) {
       </div>
 
       {d.attention && <AttentionNote dir={d} />}
+      {!d.attention && d.already_served && (
+        <div className="flex items-start gap-2 rounded-md border px-3 py-2 text-muted-foreground">
+          <StatusDot tone="wait" className="mt-1 size-2" />
+          <div className="flex-1">
+            An older <code>claude remote-control</code> is still registered for this folder. The registration ends by itself in a few minutes, and Umbilical
+            tries again every 30 seconds. Nothing to do.
+          </div>
+        </div>
+      )}
 
       <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1">
         <Fact label="State">
@@ -89,7 +99,7 @@ export function DirDetail({ dir: d }: { dir: DirStatus }) {
       </dl>
 
       {/* Open when something went wrong, so an error is never hidden. */}
-      <details className="group" open={!!d.last_error}>
+      <details className="group" open={!!d.last_error && !d.already_served}>
         <summary className="flex w-fit cursor-pointer items-center gap-1 text-muted-foreground hover:text-foreground">
           <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />
           Details
