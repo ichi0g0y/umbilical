@@ -295,6 +295,7 @@ fn dir_text(d: &umbilical_core::DirStatus) -> String {
     };
     let state = match d.state {
         RunState::Running => "running",
+        RunState::Waiting if d.already_served => "waiting for the old registration to end",
         RunState::Waiting => "waiting",
         RunState::Stopped => "stopped",
         RunState::Disabled => "disabled",

@@ -27,6 +27,10 @@ pub enum Signal {
     Attention(Attention),
     /// A claude.ai/code URL for this session.
     SessionUrl(String),
+    /// The server still has the folder registered by an older
+    /// `claude remote-control` (a 409 at start). It goes away by itself
+    /// after a few minutes, so this is a wait, not a crash.
+    AlreadyServed,
 }
 
 static URL: LazyLock<Regex> =
@@ -63,6 +67,9 @@ pub fn scan_line(line: &str) -> Vec<Signal> {
         || lower.contains("requires a subscription")
     {
         signals.push(Signal::Attention(Attention::LoginRequired));
+    }
+    if lower.contains("already served by") {
+        signals.push(Signal::AlreadyServed);
     }
     if let Some(m) = URL.find(line) {
         signals.push(Signal::SessionUrl(
@@ -165,6 +172,16 @@ mod tests {
                 .contains(&Signal::Attention(Attention::LoginRequired))
         );
         assert!(scan_line("Remote Control is ready").is_empty());
+    }
+
+    #[test]
+    fn finds_already_served() {
+        for line in [
+            "Error: This folder is already served by a terminal `claude remote-control` on this device. Stop it first.",
+            "This folder is already served by another Claude Code on this device. Stop it first.",
+        ] {
+            assert_eq!(scan_line(line), vec![Signal::AlreadyServed]);
+        }
     }
 
     #[test]

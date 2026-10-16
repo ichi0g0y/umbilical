@@ -49,6 +49,8 @@ pub struct Output {
     pub lines: VecDeque<String>,
     pub attention: Option<Attention>,
     pub session_url: Option<String>,
+    /// The last start failed because an old registration still holds the folder.
+    pub already_served: bool,
 }
 
 impl Output {
@@ -121,6 +123,7 @@ impl Proc {
             let mut out = output.lock().unwrap();
             out.attention = None;
             out.session_url = None;
+            out.already_served = false;
             out.push(format!("{} ===== start: {}", now_text(), spec.display()));
         }
         let mut log = LogFile::open(log_path.to_path_buf(), log_max);
@@ -260,6 +263,7 @@ fn read_loop(
                 match signal {
                     Signal::Attention(a) => out.attention = Some(a),
                     Signal::SessionUrl(u) => out.session_url = Some(u),
+                    Signal::AlreadyServed => out.already_served = true,
                 }
             }
             out.push(stamped);
@@ -278,6 +282,7 @@ fn read_loop(
                     match signal {
                         Signal::Attention(a) => out.attention = Some(a),
                         Signal::SessionUrl(u) => out.session_url = Some(u),
+                        Signal::AlreadyServed => out.already_served = true,
                     }
                 }
                 out.push(stamped);

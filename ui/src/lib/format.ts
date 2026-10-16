@@ -16,9 +16,10 @@ export function stateText(d: DirStatus): string {
       return d.busy ? `${base} · ${d.busy} working` : base;
     }
     case "waiting": {
-      if (!d.next_restart_at) return "waiting";
+      const what = d.already_served ? "waiting for the old registration" : "waiting";
+      if (!d.next_restart_at) return what;
       const left = Math.max(0, d.next_restart_at - Math.floor(Date.now() / 1000));
-      return `restart in ${left}s`;
+      return d.already_served ? `${what} · retry in ${left}s` : `restart in ${left}s`;
     }
     case "stopped":
       return "stopped by you";
@@ -31,6 +32,8 @@ export type Tone = "ok" | "wait" | "bad" | "off";
 
 /** Red for errors: something needs the user, or it crashed and waits to retry. */
 export function dirTone(d: DirStatus): Tone {
+  // An old registration still holds the folder. It ends by itself: a wait, not a crash.
+  if (!d.attention && d.state === "waiting" && d.already_served) return "wait";
   if (d.attention || (d.state === "waiting" && d.last_exit)) return "bad";
   if (d.state === "running") return "ok";
   if (d.state === "waiting") return "wait";
