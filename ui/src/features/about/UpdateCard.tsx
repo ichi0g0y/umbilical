@@ -7,6 +7,7 @@ import { updateAtom } from "@/state/atoms";
 
 function statusText(u: UpdateView | null): string {
   if (!u) return "Not checked yet.";
+  if (u.off) return `${u.off}.`;
   if (u.installing) return "Installing… the app restarts when done.";
   if (u.waiting) return `Version ${u.available?.version} installs when no session is working. "Install now" stops running turns.`;
   if (u.checking) return "Checking…";
@@ -28,10 +29,12 @@ export function UpdateCard() {
         <p className="text-muted-foreground">{statusText(u)}</p>
         {notes && <pre className="max-h-48 overflow-auto rounded-md border bg-muted p-3 text-xs whitespace-pre-wrap">{notes}</pre>}
         <div className="flex gap-2">
-          <Button variant="outline" disabled={u?.checking || u?.installing} onClick={() => api.checkUpdate().catch(() => {})}>
+          <Button variant="outline" disabled={!!u?.off || u?.checking || u?.installing} onClick={() => api.checkUpdate().catch(() => {})}>
             Check now
           </Button>
-          {u?.available && !u.installing && <Button onClick={() => api.installUpdate(u.waiting)}>{u.waiting ? "Install now" : "Install and restart"}</Button>}
+          {u?.available && !u.off && !u.installing && (
+            <Button onClick={() => api.installUpdate(u.waiting)}>{u.waiting ? "Install now" : "Install and restart"}</Button>
+          )}
         </div>
       </CardContent>
     </Card>

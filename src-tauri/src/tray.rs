@@ -212,11 +212,13 @@ fn build_menu(app: &AppHandle, snapshot: &Snapshot, shape: &MenuShape) -> tauri:
         true,
         None::<&str>,
     )?)?;
+    // A dev build shows why updates are off, greyed out.
+    let off = crate::update::off_reason();
     menu.append(&MenuItem::with_id(
         app,
         "check_update",
-        "Check for Updates…",
-        true,
+        off.unwrap_or("Check for Updates…"),
+        off.is_none(),
         None::<&str>,
     )?)?;
     menu.append(&PredefinedMenuItem::separator(app)?)?;
