@@ -106,6 +106,8 @@ export interface UpdateView {
   last_checked: number | null;
   available: { version: string; notes: string | null; date: string | null } | null;
   error: string | null;
+  /** Set when this build never checks or installs (a dev build). */
+  off: string | null;
 }
 
 export interface Permission {

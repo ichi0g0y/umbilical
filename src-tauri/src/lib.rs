@@ -86,7 +86,7 @@ pub fn run() {
         .manage(AppState {
             daemon: daemon_ctl::DaemonCtl::new(),
             config_path,
-            update: Mutex::new(update::UpdateState::default()),
+            update: Mutex::new(update::UpdateState::new()),
             login: Mutex::new(login::LoginState::default()),
             activity: activity::Activity::default(),
         })

@@ -9,6 +9,9 @@ use umbilical_core::supervisor::app_log;
 
 use crate::AppState;
 
+mod guard;
+pub use guard::off_reason;
+
 const REPO: &str = "https://github.com/ichi0g0y/umbilical";
 
 #[derive(Debug, Clone, Serialize)]
@@ -29,11 +32,20 @@ pub struct UpdateState {
     pub last_checked: Option<u64>,
     pub available: Option<Available>,
     pub error: Option<String>,
+    /// Set when this build never checks or installs (a dev build).
+    pub off: Option<String>,
     #[serde(skip)]
     pub pending: Option<Update>,
 }
 
 impl UpdateState {
+    pub fn new() -> Self {
+        Self {
+            off: off_reason().map(String::from),
+            ..Self::default()
+        }
+    }
+
     pub fn view(&self) -> serde_json::Value {
         serde_json::to_value(self).unwrap_or_default()
     }
@@ -57,6 +69,9 @@ pub fn is_update(channel: &str, current: &semver::Version, remote: &semver::Vers
 }
 
 pub async fn check(app: &AppHandle) -> Result<Option<Available>, String> {
+    if off_reason().is_some() {
+        return Ok(None);
+    }
     let state = app.state::<AppState>();
     let channel = state.config().update.channel;
     {
@@ -114,6 +129,9 @@ async fn do_check(app: &AppHandle, channel: &str) -> Result<Option<Update>, Stri
 /// Without `force`, first wait until no session is working: the restart cuts
 /// the turn that is running.
 pub async fn install(app: &AppHandle, force: bool) {
+    if off_reason().is_some() {
+        return;
+    }
     if !force && !wait_until_idle(app).await {
         return;
     }
@@ -203,6 +221,11 @@ fn fail(app: &AppHandle, msg: String) {
 
 /// Background loop: check on start and every N hours, as the config says.
 pub fn spawn_checker(app: AppHandle) {
+    if let Some(reason) = off_reason() {
+        let log_dir = app.state::<AppState>().config().log_dir();
+        app_log(&log_dir, &format!("update: {reason}"));
+        return;
+    }
     tauri::async_runtime::spawn(async move {
         let mut last: Option<Instant> = None;
         let mut last_channel = String::new();
@@ -245,47 +268,4 @@ fn unix_now() -> u64 {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use semver::Version;
-
-    fn v(s: &str) -> Version {
-        Version::parse(s).unwrap()
-    }
-
-    #[test]
-    fn stable_only_goes_up() {
-        assert!(is_update("stable", &v("0.1.0"), &v("0.2.0")));
-        assert!(!is_update("stable", &v("0.2.0"), &v("0.1.0")));
-        assert!(!is_update("stable", &v("0.2.0"), &v("0.2.0")));
-    }
-
-    #[test]
-    fn nightly_to_stable_can_go_down() {
-        assert!(is_update(
-            "stable",
-            &v("0.2.1-nightly.20260928"),
-            &v("0.2.0")
-        ));
-        assert!(!is_update("stable", &v("0.2.0"), &v("0.2.0")));
-    }
-
-    #[test]
-    fn nightly_ordering() {
-        assert!(is_update(
-            "nightly",
-            &v("0.2.1-nightly.20260928"),
-            &v("0.2.1-nightly.20260929")
-        ));
-        assert!(is_update(
-            "nightly",
-            &v("0.2.0"),
-            &v("0.2.1-nightly.20260929")
-        ));
-        assert!(!is_update(
-            "nightly",
-            &v("0.2.1-nightly.20260929"),
-            &v("0.2.1-nightly.20260928")
-        ));
-    }
-}
+mod tests;
