@@ -11,10 +11,8 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result};
 use portable_pty::{CommandBuilder, MasterPty, PtySize, native_pty_system};
 
-use crate::detect::{Attention, LineSplitter, Signal, scan_line, terminal_replies};
-
-/// How many output lines we keep in memory for each directory.
-pub const TAIL_LINES: usize = 1000;
+use crate::detect::{LineSplitter, scan_line, terminal_replies};
+pub use crate::output::{Output, TAIL_LINES};
 
 /// Lines this recent are not written again (TUI redraws).
 const RECENT: usize = 12;
@@ -43,36 +41,12 @@ impl Spec {
     }
 }
 
-/// Output of one directory. It lives across restarts.
-#[derive(Debug, Default)]
-pub struct Output {
-    pub lines: VecDeque<String>,
-    pub attention: Option<Attention>,
-    pub session_url: Option<String>,
-    /// The last start failed because an old registration still holds the folder.
-    pub already_served: bool,
-}
-
-impl Output {
-    fn push(&mut self, line: String) {
-        if self.lines.len() >= TAIL_LINES {
-            self.lines.pop_front();
-        }
-        self.lines.push_back(line);
-    }
-
-    /// The last lines, newest last.
-    pub fn tail(&self, n: usize) -> Vec<String> {
-        let skip = self.lines.len().saturating_sub(n);
-        self.lines.iter().skip(skip).cloned().collect()
-    }
-}
-
 pub struct Proc {
     child: Box<dyn portable_pty::Child + Send + Sync>,
     // Keep the master open while the child runs. Dropping it hangs up the pty.
     master: Option<Box<dyn MasterPty + Send>>,
     writer: Arc<Mutex<Box<dyn Write + Send>>>,
+    output: Arc<Mutex<Output>>,
     pub started: Instant,
     pub spec: Spec,
 }
@@ -119,26 +93,25 @@ impl Proc {
         let reader = pair.master.try_clone_reader().context("pty reader")?;
         let writer = Arc::new(Mutex::new(pair.master.take_writer().context("pty writer")?));
 
-        {
-            let mut out = output.lock().unwrap();
-            out.attention = None;
-            out.session_url = None;
-            out.already_served = false;
-            out.push(format!("{} ===== start: {}", now_text(), spec.display()));
-        }
+        output
+            .lock()
+            .unwrap()
+            .start(format!("{} ===== start: {}", now_text(), spec.display()));
         let mut log = LogFile::open(log_path.to_path_buf(), log_max);
         log.write_line(&format!("{} ===== start: {}", now_text(), spec.display()));
 
         let reply_writer = writer.clone();
+        let reader_output = output.clone();
         thread::Builder::new()
             .name("umbilical-pty-reader".into())
-            .spawn(move || read_loop(reader, reply_writer, output, log))
+            .spawn(move || read_loop(reader, reply_writer, reader_output, log))
             .context("start reader thread")?;
 
         Ok(Self {
             child,
             master: Some(pair.master),
             writer,
+            output,
             started: Instant::now(),
             spec,
         })
@@ -171,6 +144,8 @@ impl Proc {
     }
 
     fn send_interrupt(&self) {
+        // Sessions that end from now on end because of this stop.
+        self.output.lock().unwrap().stopping = true;
         if let Ok(mut w) = self.writer.lock() {
             let _ = w.write_all(b"\x03");
             let _ = w.flush();
@@ -259,13 +234,8 @@ fn read_loop(
             let stamped = format!("{} {line}", now_text());
             log.write_line(&stamped);
             let mut out = output.lock().unwrap();
-            for signal in scan_line(&line) {
-                match signal {
-                    Signal::Attention(a) => out.attention = Some(a),
-                    Signal::SessionUrl(u) => out.session_url = Some(u),
-                    Signal::AlreadyServed => out.already_served = true,
-                }
-            }
+            out.apply(scan_line(&line));
+            out.note_session_line(&line);
             out.push(stamped);
         }
         // A prompt that waits with no line break, like "Enable Remote Control? (y/n)".
@@ -278,13 +248,7 @@ fn read_loop(
                 let stamped = format!("{} {pending}", now_text());
                 log.write_line(&stamped);
                 let mut out = output.lock().unwrap();
-                for signal in signals {
-                    match signal {
-                        Signal::Attention(a) => out.attention = Some(a),
-                        Signal::SessionUrl(u) => out.session_url = Some(u),
-                        Signal::AlreadyServed => out.already_served = true,
-                    }
-                }
+                out.apply(signals);
                 out.push(stamped);
             }
         }

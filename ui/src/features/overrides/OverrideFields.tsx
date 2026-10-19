@@ -4,7 +4,7 @@ import { CheckField, Field, NumberField, SelectField, TextAreaField, TextField }
 import { type DirOverride, PERMISSION_MODES, SPAWN_MODES } from "@/lib/api";
 import { envText, parseEnv, toLines } from "@/lib/format";
 import { useDraftConfig, useEditConfig } from "@/hooks/useConfig";
-import { firstSessionHint } from "@/features/settings/DefaultsCard";
+import { firstSessionHint, RESUME_HINT } from "@/features/settings/DefaultsCard";
 import { snapshotAtom } from "@/state/atoms";
 
 /** Drop empty values, so the file keeps only real overrides. */
@@ -17,6 +17,7 @@ function clean(o: DirOverride): DirOverride | null {
   if (o.spawn) out.spawn = o.spawn;
   if (o.capacity && o.capacity > 0) out.capacity = o.capacity;
   if (typeof o.skip_first_session === "boolean") out.skip_first_session = o.skip_first_session;
+  if (typeof o.resume_sessions === "boolean") out.resume_sessions = o.resume_sessions;
   if (o.claude_bin?.trim()) out.claude_bin = o.claude_bin;
   if (Array.isArray(o.extra_args)) out.extra_args = o.extra_args;
   if (o.env && Object.keys(o.env).length) out.env = o.env;
@@ -31,6 +32,7 @@ export function OverrideFields({ dirKey }: { dirKey: string }) {
   const dir = snapshot.dirs.find((d) => d.key === dirKey);
   const spawn = o.spawn ?? config.spawn;
   const skipText = (skip: boolean) => (skip ? "do not make one" : "make one");
+  const resumeText = (on: boolean) => (on ? "resume" : "do not resume");
 
   const set = (change: (o: DirOverride) => void) =>
     edit((c) => {
@@ -71,6 +73,18 @@ export function OverrideFields({ dirKey }: { dirKey: string }) {
             inherit={`default (${skipText(config.skip_first_session)})`}
             disabled={spawn === "session"}
             onChange={(v) => set((x) => void (x.skip_first_session = v == null ? null : v === "skip"))}
+          />
+        </Field>
+        <Field label="Web sessions after a restart" hint={RESUME_HINT}>
+          <SelectField
+            value={o.resume_sessions == null ? null : o.resume_sessions ? "on" : "off"}
+            options={[
+              { value: "on", label: resumeText(true) },
+              { value: "off", label: resumeText(false) },
+            ]}
+            inherit={`default (${resumeText(config.resume_sessions)})`}
+            disabled={spawn !== "worktree"}
+            onChange={(v) => set((x) => void (x.resume_sessions = v == null ? null : v === "on"))}
           />
         </Field>
         <Field label="Capacity">

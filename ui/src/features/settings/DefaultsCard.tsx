@@ -41,6 +41,11 @@ export function DefaultsCard() {
           Do not make a session at start
         </CheckField>
       </Field>
+      <Field label="Web sessions" hint={RESUME_HINT}>
+        <CheckField checked={config.resume_sessions} disabled={config.spawn !== "worktree"} onChange={(v) => edit((c) => void (c.resume_sessions = v))}>
+          Resume web sessions after a restart
+        </CheckField>
+      </Field>
       <Field label="Extra arguments (one per line)">
         <TextAreaField value={config.extra_args} format={(v) => v.join("\n")} parse={toLines} onChange={(v) => edit((c) => void (c.extra_args = v))} />
       </Field>
@@ -50,6 +55,9 @@ export function DefaultsCard() {
     </Section>
   );
 }
+
+export const RESUME_HINT =
+  "Worktree mode only. A restart (Restart all, an update, a Mac restart) ends the sessions made from claude.ai. Umbilical starts them again in their worktree, and the chat goes on.";
 
 /** `--no-create-session-in-dir`. Session mode needs the first session, so it does not use it. */
 export function firstSessionHint(spawn: string) {

@@ -289,7 +289,7 @@ fn random_token() -> Result<String> {
     Ok(buf.iter().map(|b| format!("{b:02x}")).collect())
 }
 
-fn write_private(path: &Path, text: &str) -> Result<()> {
+pub(crate) fn write_private(path: &Path, text: &str) -> Result<()> {
     let tmp = path.with_extension("json.tmp");
     {
         let mut opts = fs::OpenOptions::new();

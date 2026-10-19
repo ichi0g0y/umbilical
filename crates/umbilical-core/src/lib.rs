@@ -10,6 +10,8 @@ pub mod daemon;
 pub mod detect;
 pub mod discovery;
 pub mod env;
+pub mod output;
+pub mod resume;
 pub mod supervisor;
 pub mod trust;
 

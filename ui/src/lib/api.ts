@@ -26,6 +26,26 @@ export interface DirStatus {
   log_path: string;
   /** Sessions working right now. */
   busy: number;
+  /** Web sessions kept to resume after a restart. */
+  kept_sessions: number;
+  /** Web sessions started again in their worktree. */
+  resumed: ResumedSession[];
+  /** The last session that could not be resumed. */
+  resume_note: string | null;
+}
+
+export interface ResumedSession {
+  id: string;
+  state: RunState;
+  pid: number | null;
+  started_at: number | null;
+  next_restart_at: number | null;
+  /** Failed starts in a row. */
+  tries: number;
+  last_exit: string | null;
+  last_error: string | null;
+  session_url: string | null;
+  log_path: string;
 }
 
 export interface Snapshot {
@@ -52,6 +72,7 @@ export interface DirOverride {
   spawn?: string | null;
   capacity?: number | null;
   skip_first_session?: boolean | null;
+  resume_sessions?: boolean | null;
   extra_args?: string[] | null;
   env?: Record<string, string>;
 }
@@ -78,6 +99,7 @@ export interface Config {
   skip_first_session: boolean;
   extra_args: string[];
   env: Record<string, string>;
+  resume_sessions: boolean;
   auto_trust: boolean;
   claude_json: string;
   backoff_min_secs: number;

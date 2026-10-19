@@ -9,6 +9,9 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
+mod update;
+pub use update::UpdateConfig;
+
 /// `--spawn` modes of `claude remote-control`.
 pub const SPAWN_MODES: &[&str] = &["same-dir", "worktree", "session"];
 
@@ -51,6 +54,9 @@ pub struct Config {
     pub skip_first_session: bool,
     pub extra_args: Vec<String>,
     pub env: BTreeMap<String, String>,
+    /// Start web sessions again after `claude remote-control` stops
+    /// (spawn mode `worktree` only). See `crate::resume`.
+    pub resume_sessions: bool,
 
     /// Mark the roots and every target as trusted in Claude Code before start.
     pub auto_trust: bool,
@@ -96,6 +102,7 @@ impl Default for Config {
             skip_first_session: true,
             extra_args: Vec::new(),
             env: BTreeMap::new(),
+            resume_sessions: true,
             auto_trust: true,
             claude_json: String::new(),
             backoff_min_secs: 5,
@@ -114,29 +121,6 @@ impl Default for Config {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct UpdateConfig {
-    /// `stable` or `nightly`.
-    pub channel: String,
-    pub check_on_start: bool,
-    /// 0 turns off the periodic check.
-    pub check_interval_hours: u64,
-    /// true: install without asking. false: only tell the user.
-    pub auto_install: bool,
-}
-
-impl Default for UpdateConfig {
-    fn default() -> Self {
-        Self {
-            channel: "stable".into(),
-            check_on_start: true,
-            check_interval_hours: 6,
-            auto_install: false,
-        }
-    }
-}
-
 /// Settings for one directory. `None` means "use the global value".
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -148,6 +132,7 @@ pub struct DirOverride {
     pub spawn: Option<String>,
     pub capacity: Option<u32>,
     pub skip_first_session: Option<bool>,
+    pub resume_sessions: Option<bool>,
     pub extra_args: Option<Vec<String>>,
     /// Added on top of the global env.
     pub env: BTreeMap<String, String>,

@@ -13,7 +13,8 @@ Umbilical is a small tray app for macOS and Windows (Linux builds too, not teste
 - It marks the target folders as trusted in Claude Code, and shows a banner when claude asks "Enable Remote Control? (y/n)" (answer once with **Enable all**).
 - On macOS, the **Permissions** tab shows and asks for the permissions your sessions need (Accessibility, Screen Recording, Automation, …).
 - By default, `claude remote-control` does not make a session in the folder when it starts (`--no-create-session-in-dir`). You start sessions from claude.ai or the app. Turn off **Do not make a session at start** in Settings (or per folder) to get one session at start again. Session mode always makes it.
-- When a session is made at start, `claude remote-control` reconnects it after a restart, and the chat goes on. A turn that was running is stopped. Sessions made from the web in their own worktree are not started again; their files stay.
+- When a session is made at start, `claude remote-control` reconnects it after a restart, and the chat goes on. A turn that was running is stopped.
+- **Web sessions come back after a restart** (spawn mode `worktree`). A restart (Restart all, an update, a Mac restart) ends the sessions you made from claude.ai or the app. Umbilical keeps a list of the live sessions in `~/.umbilical/sessions.json`. When the folder runs again, it starts each one again in its worktree (`claude remote-control --session-id <id>`), and the chat goes on with its history. If the worktree was removed, it is made again from its branch, or from HEAD. A session you archive in claude.ai is not started again. A turn that was running is stopped. Turn it off in Settings (**Resume web sessions after a restart**) or per folder. The window shows the resumed sessions under their folder.
 
 ## Install
 
@@ -63,6 +64,7 @@ claude_bin = ""                   # empty: ~/.local/bin/claude or PATH
 permission_mode = "bypassPermissions"
 spawn = "worktree"                # same-dir | worktree | session (worktree needs git)
 skip_first_session = true         # no session at start (--no-create-session-in-dir); not used with spawn = "session"
+resume_sessions = true            # start web sessions again after a restart (spawn = "worktree" only)
 extra_args = []
 
 backoff_min_secs = 5
@@ -104,7 +106,7 @@ task build    # build a local .app / installer
 
 Layout:
 
-- `crates/umbilical-core`: the supervisor (config, folder scan, pty processes, restarts, trust) and the daemon (`daemon.rs`: TCP on 127.0.0.1 + token in `~/.umbilical/daemon.json`). No GUI code.
+- `crates/umbilical-core`: the supervisor (config, folder scan, pty processes, restarts, trust, resume of web sessions in `resume.rs`) and the daemon (`daemon.rs`: TCP on 127.0.0.1 + token in `~/.umbilical/daemon.json`). No GUI code.
 - `src-tauri`: the Tauri 2 app (tray, window, commands, updater). `umbilical --daemon` runs only the daemon; the GUI starts it when needed and replaces it when the binary is newer.
 - `ui`: the window UI. React + TypeScript + [shadcn/ui](https://ui.shadcn.com) + Tailwind CSS, state in [Jotai](https://jotai.org), built with Vite. `bun run --cwd ui dev` serves it for `tauri dev`; `bun run ui:build` writes `ui/dist`, which the app embeds.
 
