@@ -115,6 +115,10 @@ pub struct Snapshot {
     /// Set by the GUI when it cannot reach the daemon.
     #[serde(default)]
     pub daemon_error: Option<String>,
+    /// Set by the GUI: when the config file was last changed (unix ms).
+    /// The settings screen reloads, or warns, when it changes.
+    #[serde(default)]
+    pub config_mtime: Option<u64>,
 }
 
 struct Shared {

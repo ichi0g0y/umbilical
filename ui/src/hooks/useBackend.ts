@@ -4,7 +4,7 @@ import { useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { api, type Snapshot, type UpdateView } from "@/lib/api";
 import { appInfoAtom, readyAtom, snapshotAtom, type Tab, tabAtom, updateAtom } from "@/state/atoms";
-import { useConfigActions } from "./useConfig";
+import { useConfigSync } from "./useConfig";
 
 export function useBackend() {
   const setSnapshot = useSetAtom(snapshotAtom);
@@ -12,7 +12,7 @@ export function useBackend() {
   const setUpdate = useSetAtom(updateAtom);
   const setInfo = useSetAtom(appInfoAtom);
   const setTab = useSetAtom(tabAtom);
-  const { load } = useConfigActions();
+  useConfigSync();
 
   useEffect(() => {
     let alive = true;
@@ -39,12 +39,11 @@ export function useBackend() {
       .appInfo()
       .then(setInfo)
       .catch(() => {});
-    load();
     return () => {
       alive = false;
       for (const u of unlisten) u.then((f) => f());
     };
-  }, [setSnapshot, setReady, setUpdate, setInfo, setTab, load]);
+  }, [setSnapshot, setReady, setUpdate, setInfo, setTab]);
 }
 
 /** Follow the system light / dark setting. */

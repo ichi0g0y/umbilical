@@ -40,6 +40,8 @@ export interface Snapshot {
   claude_bin: string | null;
   needs_setup: boolean;
   daemon_error: string | null;
+  /** When the config file was last changed (unix ms). */
+  config_mtime: number | null;
 }
 
 export interface DirOverride {
@@ -138,6 +140,7 @@ export const api = {
   answerAll: (attention: Attention, text: string) => invoke<void>("answer_all", { attention, text }),
   restartAll: () => invoke<void>("restart_all"),
   getConfig: () => invoke<Config>("get_config"),
+  configMtime: () => invoke<number | null>("config_mtime"),
   saveConfig: (config: Config) => invoke<void>("save_config", { config }),
   pickFolder: () => invoke<string | null>("pick_folder"),
   openPath: (path: string) => invoke<void>("open_path", { path }),

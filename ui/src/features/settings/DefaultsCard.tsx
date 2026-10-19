@@ -32,7 +32,7 @@ export function DefaultsCard() {
             mono
             value={config.claude_bin}
             placeholder={snapshot.claude_bin ? `auto: ${snapshot.claude_bin}` : "auto (not found)"}
-            onChange={(v) => edit((c) => void (c.claude_bin = v.trim()))}
+            onChange={(v) => edit((c) => void (c.claude_bin = v))}
           />
         </Field>
       </div>
