@@ -1,4 +1,4 @@
-//! One `claude remote-control --session-id <id>`: a web session started
+//! One `claude remote-control --session-id <id>`: a Remote Control session started
 //! again in its worktree, next to the server of its folder.
 
 use std::collections::BTreeMap;

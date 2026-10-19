@@ -26,9 +26,9 @@ export interface DirStatus {
   log_path: string;
   /** Sessions working right now. */
   busy: number;
-  /** Web sessions kept to resume after a restart. */
+  /** Remote Control sessions kept to resume after a restart. */
   kept_sessions: number;
-  /** Web sessions started again in their worktree. */
+  /** Remote Control sessions started again in their worktree. */
   resumed: ResumedSession[];
   /** The last session that could not be resumed. */
   resume_note: string | null;

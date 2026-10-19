@@ -41,9 +41,9 @@ export function DefaultsCard() {
           Do not make a session at start
         </CheckField>
       </Field>
-      <Field label="Web sessions" hint={RESUME_HINT}>
+      <Field label="Remote Control sessions" hint={RESUME_HINT}>
         <CheckField checked={config.resume_sessions} disabled={config.spawn !== "worktree"} onChange={(v) => edit((c) => void (c.resume_sessions = v))}>
-          Resume web sessions after a restart
+          Resume Remote Control sessions after a restart
         </CheckField>
       </Field>
       <Field label="Extra arguments (one per line)">

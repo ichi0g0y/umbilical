@@ -54,7 +54,7 @@ pub struct Config {
     pub skip_first_session: bool,
     pub extra_args: Vec<String>,
     pub env: BTreeMap<String, String>,
-    /// Start web sessions again after `claude remote-control` stops
+    /// Start Remote Control sessions again after `claude remote-control` stops
     /// (spawn mode `worktree` only). See `crate::resume`.
     pub resume_sessions: bool,
 

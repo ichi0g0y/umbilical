@@ -33,7 +33,7 @@ pub struct Settings {
     pub effective_spawn: String,
     pub capacity: Option<u32>,
     pub skip_first_session: bool,
-    /// Start web sessions again after a restart. Only for `effective_spawn == "worktree"`.
+    /// Start Remote Control sessions again after a restart. Only for `effective_spawn == "worktree"`.
     pub resume_sessions: bool,
     pub extra_args: Vec<String>,
     pub env: BTreeMap<String, String>,

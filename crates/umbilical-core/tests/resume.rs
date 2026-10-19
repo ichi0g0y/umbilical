@@ -1,4 +1,4 @@
-//! Resume of web sessions, end to end with a fake `claude` script (Unix only).
+//! Resume of Remote Control sessions, end to end with a fake `claude` script (Unix only).
 #![cfg(unix)]
 
 use std::fs;
@@ -78,7 +78,7 @@ fn stored(path: &Path) -> Vec<String> {
 }
 
 #[test]
-fn web_sessions_come_back_after_a_restart() {
+fn remote_control_sessions_come_back_after_a_restart() {
     let tmp = tempfile::tempdir().unwrap();
     let bin = tmp.path().join("claude");
     fs::write(&bin, FAKE).unwrap();
@@ -121,7 +121,7 @@ fn web_sessions_come_back_after_a_restart() {
     // Let the first look at the disk pass: what is there before is old.
     std::thread::sleep(Duration::from_millis(1500));
 
-    // A web session starts: claude makes its worktree.
+    // A Remote Control session starts: claude makes its worktree.
     let wt = folder.join(".claude/worktrees/bridge-cse_T1");
     git(
         &folder,

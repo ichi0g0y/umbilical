@@ -1,4 +1,4 @@
-//! `~/.umbilical/sessions.json`: the web sessions that live now, per folder.
+//! `~/.umbilical/sessions.json`: the Remote Control sessions that live now, per folder.
 //!
 //! It is written on every change, not only at stop, because a Mac restart
 //! can kill everything with no order. Only Umbilical reads it (mode 600).
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SessionStore {
-    /// Folder key -> its live web sessions.
+    /// Folder key -> its live Remote Control sessions.
     pub folders: BTreeMap<String, Vec<StoredSession>>,
 }
 

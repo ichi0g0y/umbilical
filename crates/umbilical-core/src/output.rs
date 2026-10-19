@@ -21,7 +21,7 @@ pub struct Output {
     pub stopping: bool,
     /// The process printed `Shutting down N active session(s)`.
     pub shutdown_seen: bool,
-    /// Web sessions that ended while the process ran normally. The
+    /// Remote Control sessions that ended while the process ran normally. The
     /// supervisor takes them out. Ends during a stop are not added, because
     /// a stop ends every session and they must come back after it.
     pub session_ends: Vec<(String, Instant)>,
@@ -62,7 +62,7 @@ impl Output {
         }
     }
 
-    /// Note a web session that ended, or the start of a shutdown.
+    /// Note a Remote Control session that ended, or the start of a shutdown.
     pub(crate) fn note_session_line(&mut self, line: &str) {
         match scan_session_line(line) {
             Some(SessionLine::ShuttingDown) => self.shutdown_seen = true,
