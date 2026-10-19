@@ -11,7 +11,7 @@ const BMAC = "https://buymeacoffee.com/ichi0g0y";
 
 function Link({ path, children, reveal }: { path: string; children: ReactNode; reveal?: boolean }) {
   return (
-    <button type="button" className="text-left break-all text-primary hover:underline" onClick={() => (reveal ? api.revealPath(path) : api.openPath(path))}>
+    <button type="button" className="text-left break-all text-link hover:underline" onClick={() => (reveal ? api.revealPath(path) : api.openPath(path))}>
       {children}
     </button>
   );

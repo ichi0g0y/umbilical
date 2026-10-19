@@ -1,0 +1,38 @@
+/* Dracula: Alucard (light) and Dracula (dark). https://draculatheme.com/spec */
+:root[data-theme="dracula"] {
+  --background: #f5f1e1;
+  --foreground: #1f1f1f;
+  --card: #fffbeb;
+  --primary: #644ac9;
+  --primary-foreground: #ffffff;
+  --secondary: #efebdb;
+  --muted: #f0ecdc;
+  --muted-foreground: #635d97;
+  --accent: #f3ede8;
+  --destructive: #cb3a2a;
+  --border: #dedad0;
+  --link: #644ac9;
+  --ok: #14710a;
+  --wait: #846e15;
+  --bad: #cb3a2a;
+  --off: #9a96b8;
+}
+
+:root.dark[data-theme="dracula"] {
+  --background: #21222c;
+  --foreground: #f8f8f2;
+  --card: #282a36;
+  --primary: #bd93f9;
+  --primary-foreground: #282a36;
+  --secondary: #343746;
+  --muted: #191a21;
+  --muted-foreground: #a4abcf;
+  --accent: #3a374d;
+  --destructive: #ff5555;
+  --border: #44475a;
+  --link: #bd93f9;
+  --ok: #50fa7b;
+  --wait: #f1fa8c;
+  --bad: #ff5555;
+  --off: #6272a4;
+}

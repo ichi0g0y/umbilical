@@ -84,6 +84,14 @@ export interface UpdateConfig {
   auto_install: boolean;
 }
 
+export type ThemeName = "umbilical" | "catppuccin" | "dracula" | "nord" | "solarized" | "gruvbox" | "tokyo-night" | "rose-pine" | "one" | "github";
+export type AppearanceMode = "system" | "light" | "dark";
+
+export interface AppearanceConfig {
+  theme: ThemeName;
+  mode: AppearanceMode;
+}
+
 export type ShowIn = "menu_bar" | "menu_bar_and_dock" | "dock";
 export type StartWindow = "manual" | "always" | "never";
 
@@ -113,6 +121,7 @@ export interface Config {
   tray_count: boolean;
   start_window: StartWindow;
   update: UpdateConfig;
+  appearance: AppearanceConfig;
   overrides: Record<string, DirOverride>;
 }
 

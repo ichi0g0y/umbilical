@@ -16,7 +16,7 @@ const buttonVariants = cva(
           "border border-border/70 bg-gradient-to-b from-card to-secondary/70 shadow-xs hover:from-accent hover:to-accent hover:text-accent-foreground dark:from-input/40 dark:to-input/20 dark:hover:from-input/60 dark:hover:to-input/50",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline active:translate-y-0",
+        link: "text-link underline-offset-4 hover:underline active:translate-y-0",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

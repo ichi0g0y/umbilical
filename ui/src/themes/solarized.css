@@ -1,0 +1,38 @@
+/* Solarized: light and dark. https://ethanschoonover.com/solarized/ */
+:root[data-theme="solarized"] {
+  --background: #eee8d5;
+  --foreground: #073642;
+  --card: #fdf6e3;
+  --primary: #1b6399;
+  --primary-foreground: #ffffff;
+  --secondary: #eee8d5;
+  --muted: #f5efdc;
+  --muted-foreground: #4f646b;
+  --accent: #ebeadd;
+  --destructive: #c0302d;
+  --border: #e0dac6;
+  --link: #1b6399;
+  --ok: #5f6e00;
+  --wait: #9a7500;
+  --bad: #c0302d;
+  --off: #93a1a1;
+}
+
+:root.dark[data-theme="solarized"] {
+  --background: #002b36;
+  --foreground: #eee8d5;
+  --card: #073642;
+  --primary: #4ea3e3;
+  --primary-foreground: #002b36;
+  --secondary: #0a404d;
+  --muted: #00212b;
+  --muted-foreground: #a7b3b3;
+  --accent: #134557;
+  --destructive: #ff7a76;
+  --border: #0f4654;
+  --link: #68b6ee;
+  --ok: #859900;
+  --wait: #b58900;
+  --bad: #ff7a76;
+  --off: #586e75;
+}

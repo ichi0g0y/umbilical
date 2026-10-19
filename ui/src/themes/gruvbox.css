@@ -1,0 +1,38 @@
+/* Gruvbox: light and dark. https://github.com/morhetz/gruvbox */
+:root[data-theme="gruvbox"] {
+  --background: #f2e5bc;
+  --foreground: #3c3836;
+  --card: #fbf1c7;
+  --primary: #076678;
+  --primary-foreground: #ffffff;
+  --secondary: #ebdbb2;
+  --muted: #f2e5bc;
+  --muted-foreground: #665c54;
+  --accent: #e7e6c1;
+  --destructive: #9d0006;
+  --border: #d5c4a1;
+  --link: #076678;
+  --ok: #79740e;
+  --wait: #b57614;
+  --bad: #9d0006;
+  --off: #a89984;
+}
+
+:root.dark[data-theme="gruvbox"] {
+  --background: #1d2021;
+  --foreground: #ebdbb2;
+  --card: #282828;
+  --primary: #83a598;
+  --primary-foreground: #1d2021;
+  --secondary: #3c3836;
+  --muted: #1d2021;
+  --muted-foreground: #bdae93;
+  --accent: #343836;
+  --destructive: #fd6a58;
+  --border: #3c3836;
+  --link: #8bad9f;
+  --ok: #b8bb26;
+  --wait: #fabd2f;
+  --bad: #fd6a58;
+  --off: #7c6f64;
+}

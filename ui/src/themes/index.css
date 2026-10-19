@@ -1,0 +1,23 @@
+/* Color themes. index.css holds the default theme (umbilical). The <html>
+   element gets data-theme="<name>", and the "dark" class for the dark
+   version (see useTheme). Each theme file sets the main colors. The rule at
+   the end sets the other colors from them, so the theme files stay short. */
+@import "./catppuccin.css";
+@import "./dracula.css";
+@import "./nord.css";
+@import "./solarized.css";
+@import "./gruvbox.css";
+@import "./tokyo-night.css";
+@import "./rose-pine.css";
+@import "./one.css";
+@import "./github.css";
+
+:root[data-theme]:not([data-theme="umbilical"]) {
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --secondary-foreground: var(--foreground);
+  --accent-foreground: var(--foreground);
+  --input: var(--border);
+  --ring: var(--link);
+}

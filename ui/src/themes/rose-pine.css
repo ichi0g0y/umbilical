@@ -1,0 +1,38 @@
+/* Rose Pine: Dawn (light) and main (dark). https://rosepinetheme.com/palette */
+:root[data-theme="rose-pine"] {
+  --background: #faf4ed;
+  --foreground: #575279;
+  --card: #fffaf3;
+  --primary: #286983;
+  --primary-foreground: #ffffff;
+  --secondary: #f2e9e1;
+  --muted: #f4ede8;
+  --muted-foreground: #625e80;
+  --accent: #eeeeea;
+  --destructive: #a8526a;
+  --border: #dfdad9;
+  --link: #286983;
+  --ok: #3e7d4a;
+  --wait: #c0791a;
+  --bad: #a8526a;
+  --off: #9893a5;
+}
+
+:root.dark[data-theme="rose-pine"] {
+  --background: #191724;
+  --foreground: #e0def4;
+  --card: #1f1d2e;
+  --primary: #c4a7e7;
+  --primary-foreground: #191724;
+  --secondary: #26233a;
+  --muted: #191724;
+  --muted-foreground: #9b97b5;
+  --accent: #332e44;
+  --destructive: #eb6f92;
+  --border: #2f2c45;
+  --link: #c4a7e7;
+  --ok: #8fd1a3;
+  --wait: #f6c177;
+  --bad: #eb6f92;
+  --off: #6e6a86;
+}
