@@ -84,12 +84,34 @@ export interface UpdateConfig {
   auto_install: boolean;
 }
 
-export type ThemeName = "umbilical" | "catppuccin" | "dracula" | "nord" | "solarized" | "gruvbox" | "tokyo-night" | "rose-pine" | "one" | "github";
-export type AppearanceMode = "system" | "light" | "dark";
+/** "system" follows the OS. Every other theme is light or dark by itself. */
+export type ThemeName =
+  | "system"
+  | "umbilical-light"
+  | "umbilical-dark"
+  | "catppuccin-latte"
+  | "catppuccin-frappe"
+  | "catppuccin-macchiato"
+  | "catppuccin-mocha"
+  | "dracula-light"
+  | "dracula-dark"
+  | "nord-light"
+  | "nord-dark"
+  | "solarized-light"
+  | "solarized-dark"
+  | "gruvbox-light"
+  | "gruvbox-dark"
+  | "tokyo-night-light"
+  | "tokyo-night-dark"
+  | "rose-pine-light"
+  | "rose-pine-dark"
+  | "one-light"
+  | "one-dark"
+  | "github-light"
+  | "github-dark";
 
 export interface AppearanceConfig {
   theme: ThemeName;
-  mode: AppearanceMode;
 }
 
 export type ShowIn = "menu_bar" | "menu_bar_and_dock" | "dock";

@@ -1,7 +1,9 @@
-/* Color themes. index.css holds the default theme (umbilical). The <html>
-   element gets data-theme="<name>", and the "dark" class for the dark
-   version (see useTheme). Each theme file sets the main colors. The rule at
-   the end sets the other colors from them, so the theme files stay short. */
+/* Color themes. index.css holds the Umbilical colors: they are used for
+   "system", "umbilical-light" and "umbilical-dark". The <html> element gets
+   data-theme="<variant>", and the "dark" class when the variant is dark (or,
+   for "system", when the OS is dark; see useTheme). Each theme file has one
+   block per variant with the main colors. The rule at the end sets the other
+   colors from them, so the theme files stay short. */
 @import "./catppuccin.css";
 @import "./dracula.css";
 @import "./nord.css";
@@ -12,7 +14,7 @@
 @import "./one.css";
 @import "./github.css";
 
-:root[data-theme]:not([data-theme="umbilical"]) {
+:root[data-theme]:not([data-theme="system"], [data-theme^="umbilical-"]) {
   --card-foreground: var(--foreground);
   --popover: var(--card);
   --popover-foreground: var(--foreground);

@@ -1,5 +1,5 @@
 /* Solarized: light and dark. https://ethanschoonover.com/solarized/ */
-:root[data-theme="solarized"] {
+:root[data-theme="solarized-light"] {
   --background: #eee8d5;
   --foreground: #073642;
   --card: #fdf6e3;
@@ -18,7 +18,7 @@
   --off: #93a1a1;
 }
 
-:root.dark[data-theme="solarized"] {
+:root[data-theme="solarized-dark"] {
   --background: #002b36;
   --foreground: #eee8d5;
   --card: #073642;

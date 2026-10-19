@@ -1,22 +1,52 @@
-// Color themes. The colors are in src/index.css (umbilical) and src/themes/.
+// Color themes. The colors are in src/index.css (Umbilical) and src/themes/.
 // Keep the names in sync with THEMES in crates/umbilical-core/src/config/appearance.rs.
-import type { AppearanceMode, ThemeName } from "@/lib/api";
+import type { ThemeName } from "@/lib/api";
 
-export const THEMES: { value: ThemeName; label: string }[] = [
-  { value: "umbilical", label: "Umbilical (purple)" },
-  { value: "catppuccin", label: "Catppuccin" },
-  { value: "dracula", label: "Dracula" },
-  { value: "nord", label: "Nord" },
-  { value: "solarized", label: "Solarized" },
-  { value: "gruvbox", label: "Gruvbox" },
-  { value: "tokyo-night", label: "Tokyo Night" },
-  { value: "rose-pine", label: "Rosé Pine" },
-  { value: "one", label: "One" },
-  { value: "github", label: "GitHub" },
+export interface Theme {
+  value: ThemeName;
+  label: string;
+  /** Light or dark. null follows the OS. */
+  dark: boolean | null;
+}
+
+function versions(dark: boolean, list: [ThemeName, string][]): Theme[] {
+  return list.map(([value, label]) => ({ value, label, dark }));
+}
+
+/** "system" first, then the light themes, then the dark ones. */
+export const THEMES: Theme[] = [
+  { value: "system", label: "System", dark: null },
+  ...versions(false, [
+    ["umbilical-light", "Umbilical Light"],
+    ["catppuccin-latte", "Catppuccin Latte"],
+    ["dracula-light", "Dracula Alucard"],
+    ["nord-light", "Nord Light"],
+    ["solarized-light", "Solarized Light"],
+    ["gruvbox-light", "Gruvbox Light"],
+    ["tokyo-night-light", "Tokyo Night Light"],
+    ["rose-pine-light", "Rosé Pine Dawn"],
+    ["one-light", "One Light"],
+    ["github-light", "GitHub Light"],
+  ]),
+  ...versions(true, [
+    ["umbilical-dark", "Umbilical Dark"],
+    ["catppuccin-frappe", "Catppuccin Frappé"],
+    ["catppuccin-macchiato", "Catppuccin Macchiato"],
+    ["catppuccin-mocha", "Catppuccin Mocha"],
+    ["dracula-dark", "Dracula"],
+    ["nord-dark", "Nord"],
+    ["solarized-dark", "Solarized Dark"],
+    ["gruvbox-dark", "Gruvbox Dark"],
+    ["tokyo-night-dark", "Tokyo Night"],
+    ["rose-pine-dark", "Rosé Pine"],
+    ["one-dark", "One Dark"],
+    ["github-dark", "GitHub Dark"],
+  ]),
 ];
 
-export const APPEARANCE_MODES: { value: AppearanceMode; label: string }[] = [
-  { value: "system", label: "Same as the system" },
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-];
+export const DEFAULT_THEME = THEMES[0];
+
+/** The theme with this name. An unknown or old name gives the default. */
+export function findTheme(name: unknown): Theme {
+  return THEMES.find((t) => t.value === name) ?? DEFAULT_THEME;
+}

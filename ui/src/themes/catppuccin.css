@@ -1,5 +1,5 @@
-/* Catppuccin: Latte (light) and Mocha (dark). https://catppuccin.com/palette */
-:root[data-theme="catppuccin"] {
+/* Catppuccin: Latte (light), and Frappé, Macchiato and Mocha (dark). https://catppuccin.com/palette */
+:root[data-theme="catppuccin-latte"] {
   --background: #e6e9ef;
   --foreground: #4c4f69;
   --card: #eff1f5;
@@ -18,7 +18,45 @@
   --off: #9ca0b0;
 }
 
-:root.dark[data-theme="catppuccin"] {
+:root[data-theme="catppuccin-frappe"] {
+  --background: #292c3c;
+  --foreground: #c6d0f5;
+  --card: #303446;
+  --primary: #ca9ee6;
+  --primary-foreground: #303446;
+  --secondary: #414559;
+  --muted: #232634;
+  --muted-foreground: #a5adce;
+  --accent: #424159;
+  --destructive: #e78284;
+  --border: #414559;
+  --link: #ca9ee6;
+  --ok: #a6d189;
+  --wait: #e5c890;
+  --bad: #e78284;
+  --off: #737994;
+}
+
+:root[data-theme="catppuccin-macchiato"] {
+  --background: #1e2030;
+  --foreground: #cad3f5;
+  --card: #24273a;
+  --primary: #c6a0f6;
+  --primary-foreground: #24273a;
+  --secondary: #363a4f;
+  --muted: #181926;
+  --muted-foreground: #a5adcb;
+  --accent: #373651;
+  --destructive: #ed8796;
+  --border: #363a4f;
+  --link: #c6a0f6;
+  --ok: #a6da95;
+  --wait: #eed49f;
+  --bad: #ed8796;
+  --off: #6e738d;
+}
+
+:root[data-theme="catppuccin-mocha"] {
   --background: #181825;
   --foreground: #cdd6f4;
   --card: #1e1e2e;

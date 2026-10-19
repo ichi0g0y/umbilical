@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { CheckField, Field, NumberField, SelectField, TextField } from "@/components/fields";
-import type { AppearanceMode, ShowIn, StartWindow, ThemeName } from "@/lib/api";
-import { APPEARANCE_MODES, THEMES } from "@/lib/themes";
+import type { ShowIn, StartWindow, ThemeName } from "@/lib/api";
+import { THEMES } from "@/lib/themes";
 import { useDraftConfig, useEditConfig } from "@/hooks/useConfig";
 import { snapshotAtom } from "@/state/atoms";
 import { Section } from "./Section";
@@ -43,18 +43,17 @@ export function GeneralCard() {
   );
 }
 
+/** "System" alone first, then the "Light" and "Dark" groups. */
+const THEME_OPTIONS = THEMES.map((t) => ({ ...t, group: t.dark === null ? undefined : t.dark ? "Dark" : "Light" }));
+
 export function AppearanceCard() {
   const config = useDraftConfig()!;
   const edit = useEditConfig();
-  const a = config.appearance;
   return (
     <Section id="appearance" title="Appearance" description="You see a change at once. Save keeps it.">
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Theme">
-          <SelectField value={a.theme} options={THEMES} onChange={(v) => edit((c) => void (c.appearance.theme = v as ThemeName))} />
-        </Field>
-        <Field label="Light or dark">
-          <SelectField value={a.mode} options={APPEARANCE_MODES} onChange={(v) => edit((c) => void (c.appearance.mode = v as AppearanceMode))} />
+        <Field label="Theme" hint="System uses the Umbilical colors, light or dark like the OS.">
+          <SelectField value={config.appearance.theme} options={THEME_OPTIONS} onChange={(v) => edit((c) => void (c.appearance.theme = v as ThemeName))} />
         </Field>
       </div>
     </Section>

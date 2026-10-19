@@ -1,5 +1,5 @@
 /* Dracula: Alucard (light) and Dracula (dark). https://draculatheme.com/spec */
-:root[data-theme="dracula"] {
+:root[data-theme="dracula-light"] {
   --background: #f5f1e1;
   --foreground: #1f1f1f;
   --card: #fffbeb;
@@ -18,7 +18,7 @@
   --off: #9a96b8;
 }
 
-:root.dark[data-theme="dracula"] {
+:root[data-theme="dracula-dark"] {
   --background: #21222c;
   --foreground: #f8f8f2;
   --card: #282a36;

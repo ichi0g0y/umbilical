@@ -1,5 +1,5 @@
 /* Gruvbox: light and dark. https://github.com/morhetz/gruvbox */
-:root[data-theme="gruvbox"] {
+:root[data-theme="gruvbox-light"] {
   --background: #f2e5bc;
   --foreground: #3c3836;
   --card: #fbf1c7;
@@ -18,7 +18,7 @@
   --off: #a89984;
 }
 
-:root.dark[data-theme="gruvbox"] {
+:root[data-theme="gruvbox-dark"] {
   --background: #1d2021;
   --foreground: #ebdbb2;
   --card: #282828;
