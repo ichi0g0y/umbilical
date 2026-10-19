@@ -90,8 +90,12 @@ check_interval_hours = 6
 auto_install = false
 
 [appearance]
-theme = "umbilical"               # umbilical, catppuccin, dracula, nord, solarized, gruvbox, tokyo-night, rose-pine, one or github
-mode = "system"                   # system | light | dark
+theme = "system"                  # system: Umbilical colors, light or dark like the OS. Or one theme below.
+# Light: umbilical-light, catppuccin-latte, dracula-light, nord-light, solarized-light,
+#        gruvbox-light, tokyo-night-light, rose-pine-light, one-light, github-light
+# Dark:  umbilical-dark, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha,
+#        dracula-dark, nord-dark, solarized-dark, gruvbox-dark, tokyo-night-dark,
+#        rose-pine-dark, one-dark, github-dark
 
 # Per-folder settings. Anything you leave out uses the values above.
 [overrides."/Users/me/.umbilical/repos/nex"]

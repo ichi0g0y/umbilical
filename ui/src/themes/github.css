@@ -1,5 +1,5 @@
 /* GitHub: Primer light and dark. https://primer.style/foundations/color */
-:root[data-theme="github"] {
+:root[data-theme="github-light"] {
   --background: #f6f8fa;
   --foreground: #1f2328;
   --card: #ffffff;
@@ -18,7 +18,7 @@
   --off: #818b98;
 }
 
-:root.dark[data-theme="github"] {
+:root[data-theme="github-dark"] {
   --background: #010409;
   --foreground: #f0f6fc;
   --card: #0d1117;

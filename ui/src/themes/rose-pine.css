@@ -1,5 +1,5 @@
 /* Rose Pine: Dawn (light) and main (dark). https://rosepinetheme.com/palette */
-:root[data-theme="rose-pine"] {
+:root[data-theme="rose-pine-light"] {
   --background: #faf4ed;
   --foreground: #575279;
   --card: #fffaf3;
@@ -18,7 +18,7 @@
   --off: #9893a5;
 }
 
-:root.dark[data-theme="rose-pine"] {
+:root[data-theme="rose-pine-dark"] {
   --background: #191724;
   --foreground: #e0def4;
   --card: #1f1d2e;

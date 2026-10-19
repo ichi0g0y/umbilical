@@ -1,5 +1,5 @@
 /* Tokyo Night: Light and Night (dark). https://github.com/tokyo-night/tokyo-night-vscode-theme */
-:root[data-theme="tokyo-night"] {
+:root[data-theme="tokyo-night-light"] {
   --background: #d5d6db;
   --foreground: #343b58;
   --card: #e6e7ed;
@@ -18,7 +18,7 @@
   --off: #9699a3;
 }
 
-:root.dark[data-theme="tokyo-night"] {
+:root[data-theme="tokyo-night-dark"] {
   --background: #16161e;
   --foreground: #c0caf5;
   --card: #1a1b26;

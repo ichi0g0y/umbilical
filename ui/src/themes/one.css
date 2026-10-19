@@ -1,5 +1,5 @@
 /* One: One Light and One Dark (Atom). https://github.com/atom/atom/tree/master/packages */
-:root[data-theme="one"] {
+:root[data-theme="one-light"] {
   --background: #eaeaeb;
   --foreground: #383a42;
   --card: #fafafa;
@@ -18,7 +18,7 @@
   --off: #a0a1a7;
 }
 
-:root.dark[data-theme="one"] {
+:root[data-theme="one-dark"] {
   --background: #21252b;
   --foreground: #d7dae0;
   --card: #282c34;

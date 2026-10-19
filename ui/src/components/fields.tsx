@@ -1,11 +1,11 @@
 // Form fields for the settings screen. Text fields keep their own text while
 // the user types, and give the parsed value back to the config.
 import { useAtomValue } from "jotai";
-import { type ReactNode, useEffect, useId, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useId, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { configRevisionAtom } from "@/state/atoms";
@@ -88,10 +88,24 @@ export function TextAreaField<T>(props: {
 
 const INHERIT = "__default__";
 
-/** A select. With `inherit`, an extra first item means "use the default" (value null). */
+type SelectOption = { value: string; label: string; group?: string };
+
+/** Options in a row with the same group go into one group. */
+function groupOptions(options: SelectOption[]) {
+  const groups: { name?: string; options: SelectOption[] }[] = [];
+  for (const o of options) {
+    const last = groups[groups.length - 1];
+    if (last && last.name === o.group) last.options.push(o);
+    else groups.push({ name: o.group, options: [o] });
+  }
+  return groups;
+}
+
+/** A select. With `inherit`, an extra first item means "use the default" (value null).
+ * Options with a `group` show under that name. */
 export function SelectField(props: {
   value: string | null;
-  options: { value: string; label: string }[] | string[];
+  options: SelectOption[] | string[];
   onChange: (v: string | null) => void;
   inherit?: string;
   disabled?: boolean;
@@ -104,10 +118,18 @@ export function SelectField(props: {
       </SelectTrigger>
       <SelectContent>
         {props.inherit && <SelectItem value={INHERIT}>{props.inherit}</SelectItem>}
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
+        {groupOptions(options).map((g, i) => (
+          <Fragment key={g.options[0].value}>
+            {i > 0 && <SelectSeparator />}
+            <SelectGroup>
+              {g.name && <SelectLabel>{g.name}</SelectLabel>}
+              {g.options.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </Fragment>
         ))}
       </SelectContent>
     </Select>

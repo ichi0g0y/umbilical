@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 mod appearance;
 mod update;
-pub use appearance::{APPEARANCE_MODES, AppearanceConfig, THEMES};
+pub use appearance::{AppearanceConfig, THEMES};
 pub use update::UpdateConfig;
 
 /// `--spawn` modes of `claude remote-control`.

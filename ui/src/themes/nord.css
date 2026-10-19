@@ -1,5 +1,5 @@
 /* Nord: Snow Storm (light) and Polar Night (dark). https://www.nordtheme.com/docs/colors-and-palettes */
-:root[data-theme="nord"] {
+:root[data-theme="nord-light"] {
   --background: #e5e9f0;
   --foreground: #2e3440;
   --card: #eceff4;
@@ -18,7 +18,7 @@
   --off: #9aa3b5;
 }
 
-:root.dark[data-theme="nord"] {
+:root[data-theme="nord-dark"] {
   --background: #272c36;
   --foreground: #eceff4;
   --card: #2e3440;

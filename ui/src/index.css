@@ -4,7 +4,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Umbilical colors (the default theme). The accent is the Umbilical purple.
+/* Umbilical colors, for the "system", "umbilical-light" and "umbilical-dark"
+   themes (.dark is the dark version). The accent is the Umbilical purple.
    --link is the purple for text links. In dark mode it is lighter than
    --primary, so both white text on buttons and purple text on the dark
    background pass WCAG AA. */
