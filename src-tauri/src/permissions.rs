@@ -107,6 +107,13 @@ mod mac {
             pane: "Privacy_Microphone",
             important: false,
         },
+        Def {
+            id: "devtools",
+            name: "Developer Tools",
+            why: "Optional. Programs start without the Gatekeeper check, so new builds and tests start faster. It is less safe: programs from the internet also run without the check. macOS has no prompt for this: add Umbilical with the + button. The list shows only when Xcode or the Command Line Tools are installed.",
+            pane: "Privacy_DevTools",
+            important: false,
+        },
     ];
 
     /// States read in a new process: macOS tells a running process some changes
@@ -167,6 +174,8 @@ mod mac {
             "microphone" => (ffi::av_status(ffi::Media::Audio), true),
             // Finder always runs, so it gives a real answer.
             "automation" => (ffi::automation("com.apple.finder"), true),
+            // No API tells if Umbilical is in the Developer Tools list.
+            "devtools" => ("unknown", false),
             _ => ("unknown", false),
         }
     }
@@ -220,7 +229,7 @@ mod tests {
     #[test]
     fn list_reads_every_state() {
         let list = super::list();
-        assert_eq!(list.len(), 7);
+        assert_eq!(list.len(), 8);
         for p in &list {
             assert!(
                 ["granted", "denied", "not_asked", "unknown"].contains(&p.state),
