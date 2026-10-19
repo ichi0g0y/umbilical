@@ -1,6 +1,7 @@
 //! Find, start and talk to the Umbilical daemon.
 
 use std::path::Path;
+#[cfg(not(target_os = "macos"))]
 use std::process::{Command, Stdio};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -86,6 +87,24 @@ impl DaemonCtl {
         }
     }
 
+    /// Stop the daemon with every session and start a new one. macOS gives
+    /// some permission changes only to a new responsible process (the daemon).
+    pub fn restart(&self) -> Result<(), String> {
+        {
+            let _guard = self.starting.lock().unwrap();
+            if self.suspended.load(Ordering::Relaxed) {
+                return Err(STOPPED.into());
+            }
+            let cached = self.client.lock().unwrap().take();
+            if let Some(c) = cached.or_else(|| Client::connect(&self.paths).ok()) {
+                c.call::<serde_json::Value>(&Request::Shutdown)
+                    .map_err(|e| format!("stop daemon: {e:#}"))?;
+            }
+            self.outdated.store(false, Ordering::Relaxed);
+        }
+        self.ensure().map(|_| ())
+    }
+
     /// Start daemons again after `shutdown` (an update that did not install).
     pub fn resume(&self) {
         self.suspended.store(false, Ordering::Relaxed);
@@ -133,6 +152,17 @@ fn is_current(c: &Client, exe: &Path) -> bool {
 }
 
 /// Start `<exe> --daemon` so that it does not end with this process.
+/// On macOS it is also responsible for itself, so the sessions keep
+/// Umbilical's permissions after the GUI quits (see `spawn_mac`).
+#[cfg(target_os = "macos")]
+fn spawn_daemon(exe: &Path) -> Result<(), String> {
+    crate::spawn_mac::spawn_disclaimed(exe, &["--daemon"])
+        .map(|_| ())
+        .map_err(|e| format!("start daemon: {e}"))
+}
+
+/// Start `<exe> --daemon` so that it does not end with this process.
+#[cfg(not(target_os = "macos"))]
 fn spawn_daemon(exe: &Path) -> Result<(), String> {
     let mut cmd = Command::new(exe);
     cmd.arg("--daemon")

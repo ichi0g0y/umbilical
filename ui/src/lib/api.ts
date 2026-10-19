@@ -139,6 +139,7 @@ export const api = {
   answer: (key: string, text: string) => invoke<void>("answer", { key, text }),
   answerAll: (attention: Attention, text: string) => invoke<void>("answer_all", { attention, text }),
   restartAll: () => invoke<void>("restart_all"),
+  restartDaemon: () => invoke<void>("restart_daemon"),
   getConfig: () => invoke<Config>("get_config"),
   configMtime: () => invoke<number | null>("config_mtime"),
   saveConfig: (config: Config) => invoke<void>("save_config", { config }),

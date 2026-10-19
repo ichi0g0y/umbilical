@@ -33,7 +33,7 @@ Later updates are downloaded by the app itself, so they should not show these wa
 
 ### macOS permissions
 
-Sessions run inside Umbilical, so macOS uses Umbilical's permissions for them (Accessibility, Screen Recording, and so on). Open the **Permissions** tab to see them and allow what your sessions need. Then click **Restart all**.
+Sessions run inside Umbilical, so macOS uses Umbilical's permissions for them (Accessibility, Screen Recording, and so on). Open the **Permissions** tab to see them and allow what your sessions need. Then click **Restart daemon** on that tab. It stops every session and the daemon and starts them again. macOS may give some changes only to a new daemon, so **Restart all** (only the sessions) may not be enough. The daemon keeps these permissions for the sessions after you quit the window/tray app.
 
 **Developer Tools** is optional. With it, programs that sessions start skip the Gatekeeper check, so new builds and tests start faster. But programs from the internet also skip the check, so add it only if you need the speed.
 

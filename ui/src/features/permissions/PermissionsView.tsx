@@ -2,9 +2,10 @@ import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { StatusDot } from "@/components/StatusDot";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api, type Permission } from "@/lib/api";
 import { permissionsAtom } from "@/state/atoms";
+import { RestartDaemonButton } from "./RestartDaemonButton";
 
 const STATE: Record<Permission["state"], string> = {
   granted: "Allowed",
@@ -49,8 +50,12 @@ export function PermissionsView() {
           <CardTitle className="text-[15px]">Permissions</CardTitle>
           <CardDescription>
             Claude sessions run inside Umbilical, so macOS uses Umbilical's permissions for them. Allow what your sessions need, for example Accessibility and
-            Screen Recording for screen control. After a change, use <b>Restart all</b>, so running sessions get it.
+            Screen Recording for screen control. After a change, use <b>Restart daemon</b>, so the sessions get it. (<b>Restart all</b> may not be enough for
+            some permissions.)
           </CardDescription>
+          <CardAction>
+            <RestartDaemonButton />
+          </CardAction>
         </CardHeader>
         <CardContent className="divide-y px-4">
           {list.map((p) => (

@@ -1,7 +1,7 @@
 //! Commands the web UI calls with `invoke`.
 
 use serde::Serialize;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 use umbilical_core::daemon::Request;
@@ -53,6 +53,14 @@ pub fn answer_all(state: State<AppState>, attention: Attention, text: String) {
 #[tauri::command]
 pub fn restart_all(state: State<AppState>) {
     state.daemon.send(Request::RestartAll);
+}
+
+/// Stop the daemon with every session and start a new one.
+#[tauri::command]
+pub async fn restart_daemon(app: AppHandle) -> CmdResult<()> {
+    tauri::async_runtime::spawn_blocking(move || app.state::<AppState>().daemon.restart())
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]

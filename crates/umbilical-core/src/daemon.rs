@@ -11,7 +11,7 @@ use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::{Duration, UNIX_EPOCH};
+use std::time::{Duration, Instant, UNIX_EPOCH};
 
 use anyhow::{Context, Result};
 use serde::de::DeserializeOwned;
@@ -106,8 +106,13 @@ impl Paths {
 pub fn serve(config_path: PathBuf, paths: &Paths) -> Result<()> {
     fs::create_dir_all(&paths.dir)?;
     let lock = File::create(paths.lock()).context("create daemon.lock")?;
-    if lock.try_lock().is_err() {
-        anyhow::bail!("another Umbilical daemon is already running");
+    // A daemon that was just told to stop can hold the lock for a moment.
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while lock.try_lock().is_err() {
+        if Instant::now() > deadline {
+            anyhow::bail!("another Umbilical daemon is already running");
+        }
+        std::thread::sleep(Duration::from_millis(100));
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").context("listen on 127.0.0.1")?;
