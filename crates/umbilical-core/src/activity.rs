@@ -52,7 +52,8 @@ pub fn project_dir_name(path: &Path) -> String {
 pub fn busy_sessions(projects: &Path, dir: &Path, now: SystemTime) -> usize {
     // claude runs in the real path, so a symlinked target has the real name.
     let mut bases = vec![project_dir_name(dir)];
-    if let Ok(real) = fs::canonicalize(dir) {
+    // (Unix only: on Windows it gives a `\\?\C:\...` path that claude never uses.)
+    if let Some(real) = fs::canonicalize(dir).ok().filter(|_| cfg!(unix)) {
         let name = project_dir_name(&real);
         if !bases.contains(&name) {
             bases.push(name);
