@@ -11,6 +11,8 @@ mod permissions;
 #[cfg(target_os = "macos")]
 mod permissions_ffi;
 mod presence;
+#[cfg(target_os = "macos")]
+mod spawn_mac;
 mod tray;
 mod update;
 
@@ -115,6 +117,7 @@ pub fn run() {
             commands::get_tail,
             commands::dir_action,
             commands::restart_all,
+            commands::restart_daemon,
             commands::answer,
             commands::answer_all,
             commands::get_config,
