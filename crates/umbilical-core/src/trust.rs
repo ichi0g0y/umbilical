@@ -134,7 +134,13 @@ fn write_atomic(file: &Path, text: &str) -> Result<()> {
 fn keys_for(dirs: &[PathBuf]) -> Vec<String> {
     let mut keys: Vec<String> = Vec::new();
     for dir in dirs {
-        let real = fs::canonicalize(dir).ok();
+        // On Windows `canonicalize` gives a `\\?\C:\...` path, which Claude
+        // Code never uses as a key. Symlinked folders are a Unix case.
+        let real = if cfg!(unix) {
+            fs::canonicalize(dir).ok()
+        } else {
+            None
+        };
         for key in std::iter::once(key_for(dir)).chain(real.map(|r| key_for(&r))) {
             if !keys.contains(&key) {
                 keys.push(key);
