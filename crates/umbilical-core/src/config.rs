@@ -9,7 +9,9 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
+mod appearance;
 mod update;
+pub use appearance::{APPEARANCE_MODES, AppearanceConfig, THEMES};
 pub use update::UpdateConfig;
 
 /// `--spawn` modes of `claude remote-control`.
@@ -83,6 +85,7 @@ pub struct Config {
     /// One of [`START_WINDOW_MODES`]. Only the GUI reads it.
     pub start_window: String,
     pub update: UpdateConfig,
+    pub appearance: AppearanceConfig,
 
     /// Per-directory settings. The key is the full path of the directory.
     pub overrides: BTreeMap<String, DirOverride>,
@@ -116,6 +119,7 @@ impl Default for Config {
             tray_count: false,
             start_window: "manual".into(),
             update: UpdateConfig::default(),
+            appearance: AppearanceConfig::default(),
             overrides: BTreeMap::new(),
         }
     }
@@ -206,6 +210,7 @@ impl Config {
         check_one_of("permission_mode", &self.permission_mode, PERMISSION_MODES)?;
         check_one_of("show_in", &self.show_in, SHOW_IN_MODES)?;
         check_one_of("start_window", &self.start_window, START_WINDOW_MODES)?;
+        self.appearance.validate()?;
         if !matches!(self.update.channel.as_str(), "stable" | "nightly") {
             anyhow::bail!(
                 "update.channel must be \"stable\" or \"nightly\", got {:?}",

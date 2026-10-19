@@ -1,6 +1,7 @@
 import { useAtomValue } from "jotai";
 import { CheckField, Field, NumberField, SelectField, TextField } from "@/components/fields";
-import type { ShowIn, StartWindow } from "@/lib/api";
+import type { AppearanceMode, ShowIn, StartWindow, ThemeName } from "@/lib/api";
+import { APPEARANCE_MODES, THEMES } from "@/lib/themes";
 import { useDraftConfig, useEditConfig } from "@/hooks/useConfig";
 import { snapshotAtom } from "@/state/atoms";
 import { Section } from "./Section";
@@ -38,6 +39,24 @@ export function GeneralCard() {
           Show the count (running/total) next to the icon
         </CheckField>
       </Field>
+    </Section>
+  );
+}
+
+export function AppearanceCard() {
+  const config = useDraftConfig()!;
+  const edit = useEditConfig();
+  const a = config.appearance;
+  return (
+    <Section id="appearance" title="Appearance" description="You see a change at once. Save keeps it.">
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Theme">
+          <SelectField value={a.theme} options={THEMES} onChange={(v) => edit((c) => void (c.appearance.theme = v as ThemeName))} />
+        </Field>
+        <Field label="Light or dark">
+          <SelectField value={a.mode} options={APPEARANCE_MODES} onChange={(v) => edit((c) => void (c.appearance.mode = v as AppearanceMode))} />
+        </Field>
+      </div>
     </Section>
   );
 }

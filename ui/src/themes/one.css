@@ -1,0 +1,38 @@
+/* One: One Light and One Dark (Atom). https://github.com/atom/atom/tree/master/packages */
+:root[data-theme="one"] {
+  --background: #eaeaeb;
+  --foreground: #383a42;
+  --card: #fafafa;
+  --primary: #2f5ec6;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f0f1;
+  --muted: #f0f0f1;
+  --muted-foreground: #5f626c;
+  --accent: #eaeef6;
+  --destructive: #ca1243;
+  --border: #dbdbdc;
+  --link: #2f5ec6;
+  --ok: #3f843e;
+  --wait: #986801;
+  --bad: #ca1243;
+  --off: #a0a1a7;
+}
+
+:root.dark[data-theme="one"] {
+  --background: #21252b;
+  --foreground: #d7dae0;
+  --card: #282c34;
+  --primary: #61afef;
+  --primary-foreground: #21252b;
+  --secondary: #2c313c;
+  --muted: #1e2227;
+  --muted-foreground: #9da5b4;
+  --accent: #2f3c4a;
+  --destructive: #e8838b;
+  --border: #3a3f4b;
+  --link: #61afef;
+  --ok: #98c379;
+  --wait: #e5c07b;
+  --bad: #e8838b;
+  --off: #5c6370;
+}

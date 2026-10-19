@@ -1,0 +1,38 @@
+/* Tokyo Night: Light and Night (dark). https://github.com/tokyo-night/tokyo-night-vscode-theme */
+:root[data-theme="tokyo-night"] {
+  --background: #d5d6db;
+  --foreground: #343b58;
+  --card: #e6e7ed;
+  --primary: #34548a;
+  --primary-foreground: #ffffff;
+  --secondary: #cbccd1;
+  --muted: #dcdde2;
+  --muted-foreground: #4c505e;
+  --accent: #d8dbe5;
+  --destructive: #8c4351;
+  --border: #c4c5cb;
+  --link: #34548a;
+  --ok: #485e30;
+  --wait: #8f5e15;
+  --bad: #8c4351;
+  --off: #9699a3;
+}
+
+:root.dark[data-theme="tokyo-night"] {
+  --background: #16161e;
+  --foreground: #c0caf5;
+  --card: #1a1b26;
+  --primary: #7aa2f7;
+  --primary-foreground: #1a1b26;
+  --secondary: #292e42;
+  --muted: #16161e;
+  --muted-foreground: #a9b1d6;
+  --accent: #262b3f;
+  --destructive: #f7768e;
+  --border: #292e42;
+  --link: #7aa2f7;
+  --ok: #9ece6a;
+  --wait: #e0af68;
+  --bad: #f7768e;
+  --off: #565f89;
+}

@@ -1,29 +1,38 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./themes/index.css";
 
 @custom-variant dark (&:is(.dark *));
 
-/* Umbilical colors. The accent is the orange of the app icon. */
+/* Umbilical colors (the default theme). The accent is the Umbilical purple.
+   --link is the purple for text links. In dark mode it is lighter than
+   --primary, so both white text on buttons and purple text on the dark
+   background pass WCAG AA. */
 :root {
   --radius: 0.75rem;
+  /* The Umbilical purple, from dark to light. Other themes do not change these. */
+  --umbilical: #6b3fa0;
+  --umbilical-light: #8a5cc7;
+  --umbilical-lighter: #b48cf0;
   --background: #f3f1ee;
   --foreground: #26231f;
   --card: #fffdfb;
   --card-foreground: #26231f;
   --popover: #fffdfb;
   --popover-foreground: #26231f;
-  --primary: #e0784f;
+  --primary: var(--umbilical);
   --primary-foreground: #ffffff;
   --secondary: #efebe6;
   --secondary-foreground: #26231f;
   --muted: #f0ece7;
   --muted-foreground: #756f68;
-  --accent: #fbeee8;
+  --accent: #eee8f6;
   --accent-foreground: #26231f;
   --destructive: #d4564e;
   --border: #e5e0d9;
   --input: #e5e0d9;
-  --ring: #e0784f;
+  --ring: var(--umbilical);
+  --link: var(--umbilical);
   --ok: #1f9d55;
   --wait: #d08c21;
   --bad: #d4564e;
@@ -40,18 +49,19 @@
   --card-foreground: #ece8e2;
   --popover: #24211d;
   --popover-foreground: #ece8e2;
-  --primary: #ec8054;
+  --primary: var(--umbilical-light);
   --primary-foreground: #ffffff;
   --secondary: #2b2722;
   --secondary-foreground: #ece8e2;
   --muted: #171513;
   --muted-foreground: #a39d94;
-  --accent: #352a23;
+  --accent: #2f2839;
   --accent-foreground: #ece8e2;
   --destructive: #e0635b;
   --border: #342f2a;
   --input: #342f2a;
-  --ring: #ec8054;
+  --ring: var(--umbilical-lighter);
+  --link: var(--umbilical-lighter);
   /* Brighter on the dark card, so the dots stay easy to read. */
   --ok: #3fb574;
   --wait: #e0a33a;
@@ -84,6 +94,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-link: var(--link);
+  --color-umbilical: var(--umbilical);
+  --color-umbilical-light: var(--umbilical-light);
+  --color-umbilical-lighter: var(--umbilical-lighter);
   --color-ok: var(--ok);
   --color-wait: var(--wait);
   --color-bad: var(--bad);

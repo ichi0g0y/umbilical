@@ -1,0 +1,38 @@
+/* Nord: Snow Storm (light) and Polar Night (dark). https://www.nordtheme.com/docs/colors-and-palettes */
+:root[data-theme="nord"] {
+  --background: #e5e9f0;
+  --foreground: #2e3440;
+  --card: #eceff4;
+  --primary: #435f86;
+  --primary-foreground: #ffffff;
+  --secondary: #d8dee9;
+  --muted: #e5e9f0;
+  --muted-foreground: #4c566a;
+  --accent: #dee3eb;
+  --destructive: #a5434c;
+  --border: #d8dee9;
+  --link: #435f86;
+  --ok: #5f7f45;
+  --wait: #b0822b;
+  --bad: #a5434c;
+  --off: #9aa3b5;
+}
+
+:root.dark[data-theme="nord"] {
+  --background: #272c36;
+  --foreground: #eceff4;
+  --card: #2e3440;
+  --primary: #88c0d0;
+  --primary-foreground: #2e3440;
+  --secondary: #3b4252;
+  --muted: #242933;
+  --muted-foreground: #c0c8d6;
+  --accent: #394551;
+  --destructive: #e6858e;
+  --border: #3b4252;
+  --link: #88c0d0;
+  --ok: #a3be8c;
+  --wait: #ebcb8b;
+  --bad: #e6858e;
+  --off: #616e88;
+}

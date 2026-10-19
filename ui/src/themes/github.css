@@ -1,0 +1,38 @@
+/* GitHub: Primer light and dark. https://primer.style/foundations/color */
+:root[data-theme="github"] {
+  --background: #f6f8fa;
+  --foreground: #1f2328;
+  --card: #ffffff;
+  --primary: #177335;
+  --primary-foreground: #ffffff;
+  --secondary: #f6f8fa;
+  --muted: #f6f8fa;
+  --muted-foreground: #59636e;
+  --accent: #ddf4ff;
+  --destructive: #cf222e;
+  --border: #d1d9e0;
+  --link: #0969da;
+  --ok: #1a7f37;
+  --wait: #9a6700;
+  --bad: #cf222e;
+  --off: #818b98;
+}
+
+:root.dark[data-theme="github"] {
+  --background: #010409;
+  --foreground: #f0f6fc;
+  --card: #0d1117;
+  --primary: #238636;
+  --primary-foreground: #ffffff;
+  --secondary: #151b23;
+  --muted: #010409;
+  --muted-foreground: #9198a1;
+  --accent: #121d2f;
+  --destructive: #f85149;
+  --border: #3d444d;
+  --link: #4493f8;
+  --ok: #3fb950;
+  --wait: #d29922;
+  --bad: #f85149;
+  --off: #656c76;
+}

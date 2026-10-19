@@ -13,6 +13,8 @@ fn save_and_load_round_trip() {
     let path = dir.path().join("config.toml");
     let mut config = Config::default();
     config.update.channel = "nightly".into();
+    config.appearance.theme = "catppuccin".into();
+    config.appearance.mode = "dark".into();
     config.overrides.insert(
         "/tmp/a".into(),
         DirOverride {
@@ -27,6 +29,8 @@ fn save_and_load_round_trip() {
 
     let loaded = Config::load(&path).unwrap();
     assert_eq!(loaded.update.channel, "nightly");
+    assert_eq!(loaded.appearance.theme, "catppuccin");
+    assert_eq!(loaded.appearance.mode, "dark");
     assert_eq!(
         loaded.overrides["/tmp/a"].spawn.as_deref(),
         Some("same-dir")
@@ -42,6 +46,10 @@ fn bad_values_are_rejected() {
     let config: Config = toml::from_str("[update]\nchannel = \"beta\"").unwrap();
     assert!(config.validate().is_err());
     let config: Config = toml::from_str("[overrides.\"/x\"]\npermission_mode = \"yolo\"").unwrap();
+    assert!(config.validate().is_err());
+    let config: Config = toml::from_str("[appearance]\ntheme = \"neon\"").unwrap();
+    assert!(config.validate().is_err());
+    let config: Config = toml::from_str("[appearance]\nmode = \"dim\"").unwrap();
     assert!(config.validate().is_err());
 }
 
@@ -59,4 +67,13 @@ fn expand_home_works() {
     assert_eq!(expand_home("~"), home());
     assert_eq!(expand_home("~/a/b"), home().join("a/b"));
     assert_eq!(expand_home("/abs"), PathBuf::from("/abs"));
+}
+
+#[test]
+fn every_theme_is_valid() {
+    for theme in THEMES {
+        let mut config = Config::default();
+        config.appearance.theme = (*theme).into();
+        assert!(config.validate().is_ok(), "{theme}");
+    }
 }

@@ -10,11 +10,12 @@ import { usePermissions } from "@/features/permissions/usePermissions";
 import { SettingsView } from "@/features/settings/SettingsView";
 import { SetupView } from "@/features/setup/SetupView";
 import { StatusView } from "@/features/status/StatusView";
-import { useBackend, useSystemTheme } from "@/hooks/useBackend";
+import { useBackend } from "@/hooks/useBackend";
+import { useTheme } from "@/hooks/useTheme";
 import { readyAtom, snapshotAtom, type Tab, tabAtom } from "@/state/atoms";
 
 export function App() {
-  useSystemTheme();
+  useTheme();
   useBackend();
   usePermissions();
   const ready = useAtomValue(readyAtom);

@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useConfigActions, useDraftConfig } from "@/hooks/useConfig";
 import { appInfoAtom, configLoadErrorAtom, diskChangedAtom, dirtyAtom, snapshotAtom } from "@/state/atoms";
-import { GeneralCard, LogsCard, RestartCard, UpdatesCard } from "./AppCards";
+import { AppearanceCard, GeneralCard, LogsCard, RestartCard, UpdatesCard } from "./AppCards";
 import { DefaultsCard } from "./DefaultsCard";
 import { TargetsCard } from "./TargetsCard";
 
@@ -28,6 +28,7 @@ function groupsFor(missing: boolean) {
       title: "App",
       sections: [
         { id: "general", title: "General" },
+        { id: "appearance", title: "Appearance" },
         { id: "updates", title: "Updates" },
         { id: "logs", title: "Logs" },
       ],
@@ -114,6 +115,7 @@ export function SettingsView() {
           {missing && <MissingFoldersCard />}
           <RestartCard />
           <GeneralCard />
+          <AppearanceCard />
           <UpdatesCard />
           <LogsCard />
         </div>

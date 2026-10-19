@@ -90,7 +90,7 @@ export function DirDetail({ dir: d }: { dir: DirStatus }) {
         </Fact>
         <Fact label="Session">
           {d.session_url ? (
-            <button type="button" className="text-primary hover:underline" onClick={() => api.openPath(d.session_url!)}>
+            <button type="button" className="text-link hover:underline" onClick={() => api.openPath(d.session_url!)}>
               {d.session_url}
             </button>
           ) : (

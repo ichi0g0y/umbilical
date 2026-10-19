@@ -89,6 +89,10 @@ check_on_start = true
 check_interval_hours = 6
 auto_install = false
 
+[appearance]
+theme = "umbilical"               # umbilical, catppuccin, dracula, nord, solarized, gruvbox, tokyo-night, rose-pine, one or github
+mode = "system"                   # system | light | dark
+
 # Per-folder settings. Anything you leave out uses the values above.
 [overrides."/Users/me/.umbilical/repos/nex"]
 spawn = "same-dir"

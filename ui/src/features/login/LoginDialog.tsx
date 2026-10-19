@@ -62,7 +62,7 @@ export function LoginDialog() {
           </DialogDescription>
         </DialogHeader>
         {urls.map((u) => (
-          <button key={u} type="button" className="text-left text-xs break-all text-primary hover:underline" onClick={() => api.openPath(u)}>
+          <button key={u} type="button" className="text-left text-xs break-all text-link hover:underline" onClick={() => api.openPath(u)}>
             Open login page: {u}
           </button>
         ))}
