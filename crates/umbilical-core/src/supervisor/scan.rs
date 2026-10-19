@@ -21,6 +21,7 @@ impl Worker {
                 }
                 self.config = c;
                 self.config_error = None;
+                self.config_held = false;
                 self.needs_setup = false;
                 self.debug(&format!(
                     "config: roots={:?} dirs={:?} exclude={:?} spawn={} permission={} auto_trust={} overrides={}",

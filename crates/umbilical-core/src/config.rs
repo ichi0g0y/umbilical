@@ -160,6 +160,24 @@ impl DirOverride {
 }
 
 impl Config {
+    /// Settings that start nothing and write nothing. Used while the config
+    /// file cannot be read, so a typo never runs the defaults instead of the
+    /// user's settings (other roots, `bypassPermissions`, trust writes).
+    pub fn inert() -> Self {
+        Self {
+            roots: Vec::new(),
+            dirs: Vec::new(),
+            auto_trust: false,
+            update: UpdateConfig {
+                check_on_start: false,
+                check_interval_hours: 0,
+                auto_install: false,
+                ..UpdateConfig::default()
+            },
+            ..Self::default()
+        }
+    }
+
     /// `~/.umbilical/config.toml`
     pub fn default_path() -> PathBuf {
         home().join(".umbilical").join("config.toml")

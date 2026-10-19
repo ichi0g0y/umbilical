@@ -103,6 +103,10 @@ pub struct Snapshot {
     pub total: usize,
     pub config_path: String,
     pub config_error: Option<String>,
+    /// The config file had an error at start and no good one was loaded
+    /// since, so nothing runs (old settings are not there to keep).
+    #[serde(default)]
+    pub config_held: bool,
     pub log_dir: String,
     /// The claude binary from the global settings, if found.
     pub claude_bin: Option<String>,
@@ -196,6 +200,8 @@ struct Worker {
     config: Config,
     config_mtime: Option<SystemTime>,
     config_error: Option<String>,
+    /// No good config was loaded yet: the file had an error at start.
+    config_held: bool,
     needs_setup: bool,
     path_var: String,
     entries: BTreeMap<String, Entry>,
