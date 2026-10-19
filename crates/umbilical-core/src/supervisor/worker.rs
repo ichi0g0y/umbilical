@@ -26,10 +26,12 @@ impl Worker {
         } else {
             match Config::load(&config_path) {
                 Ok(c) => (c, None),
-                Err(e) => (Config::default(), Some(format!("{e:#}"))),
+                // Run nothing until the file is fixed (see `Config::inert`).
+                Err(e) => (Config::inert(), Some(format!("{e:#}"))),
             }
         };
         let worker = Self {
+            config_held: config_error.is_some(),
             needs_setup,
             config_mtime: mtime(&config_path),
             config_path,

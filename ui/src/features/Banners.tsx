@@ -18,7 +18,10 @@ export function Banners() {
 
   const problems: string[] = [];
   if (s.daemon_error) problems.push(`Cannot reach the Umbilical daemon: ${s.daemon_error}`);
-  if (s.config_error) problems.push(`Config error (old settings still used): ${s.config_error}`);
+  if (s.config_error)
+    problems.push(
+      s.config_held ? `Config error. Nothing runs until you fix it: ${s.config_error}` : `Config error (old settings still used): ${s.config_error}`,
+    );
   if (s.dirs.length && !s.claude_bin) problems.push("claude binary not found. Set it in Settings.");
 
   const consent = s.dirs.filter((d) => d.attention === "remote_control_consent").length;

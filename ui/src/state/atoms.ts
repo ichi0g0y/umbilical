@@ -10,6 +10,7 @@ export const emptySnapshot: Snapshot = {
   total: 0,
   config_path: "",
   config_error: null,
+  config_held: false,
   log_dir: "",
   claude_bin: null,
   needs_setup: false,

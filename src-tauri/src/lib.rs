@@ -30,11 +30,22 @@ pub struct AppState {
     pub update: Mutex<update::UpdateState>,
     pub login: Mutex<login::LoginState>,
     pub activity: activity::Activity,
+    /// The last config that loaded. Used while the file has an error.
+    pub last_config: Mutex<Option<Config>>,
 }
 
 impl AppState {
+    /// The config file. While it has an error: the last good one, or
+    /// settings that do nothing (never the defaults, see `Config::inert`).
     pub fn config(&self) -> Config {
-        Config::load(&self.config_path).unwrap_or_default()
+        let mut last = self.last_config.lock().unwrap();
+        match Config::load(&self.config_path) {
+            Ok(c) => {
+                *last = Some(c.clone());
+                c
+            }
+            Err(_) => last.clone().unwrap_or_else(Config::inert),
+        }
     }
 
     /// Status from the daemon. If it cannot be reached, an empty status with the error.
@@ -89,6 +100,7 @@ pub fn run() {
             update: Mutex::new(update::UpdateState::new()),
             login: Mutex::new(login::LoginState::default()),
             activity: activity::Activity::default(),
+            last_config: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_status,

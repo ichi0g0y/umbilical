@@ -194,6 +194,30 @@ fn already_served_is_a_wait_not_a_crash() {
 }
 
 #[test]
+fn broken_config_at_start_runs_nothing() {
+    let (tmp, config_path) = setup(|_| {});
+    let good = fs::read_to_string(&config_path).unwrap();
+    fs::write(&config_path, format!("{good}\nroots = [")).unwrap();
+    let sup = Supervisor::start(config_path.clone());
+    let s = wait_for(&sup, "config error shown", |s| s.config_error.is_some());
+    assert!(s.config_held);
+    std::thread::sleep(Duration::from_millis(1500));
+    let s = sup.snapshot();
+    assert!(s.dirs.is_empty(), "nothing may run: {s:#?}");
+    // No trust write with the default settings.
+    assert!(!tmp.path().join(".claude.json").exists());
+
+    // Fixed: the folders start without a restart.
+    fs::write(&config_path, good).unwrap();
+    let s = wait_for(&sup, "one running", |s| {
+        state_of(s, "one") == Some(RunState::Running)
+    });
+    assert!(s.config_error.is_none());
+    assert!(!s.config_held);
+    sup.shutdown();
+}
+
+#[test]
 fn missing_binary_is_reported() {
     let (_tmp, config_path) = setup(|c| c.claude_bin = "/nope/claude".into());
     let sup = Supervisor::start(config_path);

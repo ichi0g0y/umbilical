@@ -34,6 +34,8 @@ export interface Snapshot {
   total: number;
   config_path: string;
   config_error: string | null;
+  /** The config had an error at start, so nothing runs until it is fixed. */
+  config_held: boolean;
   log_dir: string;
   claude_bin: string | null;
   needs_setup: boolean;
