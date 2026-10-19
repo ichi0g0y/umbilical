@@ -1,4 +1,4 @@
-//! Resume web sessions after `claude remote-control` stops.
+//! Resume Remote Control sessions after `claude remote-control` stops.
 //!
 //! In spawn mode `worktree`, a session made from claude.ai runs in its own
 //! worktree `<folder>/.claude/worktrees/bridge-cse_<id>` on the branch
@@ -68,7 +68,7 @@ pub fn branch_name(id: &str) -> String {
     format!("worktree-bridge-{id}")
 }
 
-/// Web sessions of this folder that are on disk now: a `bridge-cse_<id>`
+/// Remote Control sessions of this folder that are on disk now: a `bridge-cse_<id>`
 /// worktree, or a transcript folder of one with `"entrypoint": "sdk-cli"`.
 pub fn find_sessions(folder: &Path, projects: &Path) -> BTreeSet<String> {
     let mut ids = BTreeSet::new();

@@ -75,7 +75,7 @@ export function OverrideFields({ dirKey }: { dirKey: string }) {
             onChange={(v) => set((x) => void (x.skip_first_session = v == null ? null : v === "skip"))}
           />
         </Field>
-        <Field label="Web sessions after a restart" hint={RESUME_HINT}>
+        <Field label="Remote Control sessions after a restart" hint={RESUME_HINT}>
           <SelectField
             value={o.resume_sessions == null ? null : o.resume_sessions ? "on" : "off"}
             options={[

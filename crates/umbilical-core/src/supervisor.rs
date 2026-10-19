@@ -98,10 +98,10 @@ pub struct DirStatus {
     /// Sessions working right now (see `activity`). The GUI fills it in.
     #[serde(default)]
     pub busy: usize,
-    /// Web sessions that are kept to resume after a restart (see `resume`).
+    /// Remote Control sessions that are kept to resume after a restart (see `resume`).
     #[serde(default)]
     pub kept_sessions: usize,
-    /// Web sessions started again in their worktree.
+    /// Remote Control sessions started again in their worktree.
     #[serde(default)]
     pub resumed: Vec<ResumedSession>,
     /// The last session that could not be resumed.
@@ -231,7 +231,7 @@ struct Worker {
     /// When `trusted` was filled. It is cleared after a while to check again.
     trusted_at: Option<Instant>,
     trust_error: Option<String>,
-    /// Web sessions to resume, and the file they are kept in.
+    /// Remote Control sessions to resume, and the file they are kept in.
     store: SessionStore,
     store_path: PathBuf,
     last_session_scan: Option<Instant>,

@@ -1,4 +1,4 @@
-// Web sessions that Umbilical keeps, and the ones it started again after a restart.
+// Remote Control sessions that Umbilical keeps, and the ones it started again after a restart.
 import { StatusDot } from "@/components/StatusDot";
 import { Button } from "@/components/ui/button";
 import { api, type DirStatus, type ResumedSession } from "@/lib/api";
@@ -21,7 +21,7 @@ export function ResumedSessions({ dir: d }: { dir: DirStatus }) {
   if (!d.kept_sessions && !d.resumed.length && !d.resume_note) return null;
   return (
     <div className="flex flex-col gap-1.5">
-      <h3 className="font-semibold">Web sessions</h3>
+      <h3 className="font-semibold">Remote Control sessions</h3>
       <p className="text-muted-foreground">{plural(d.kept_sessions, "session")} kept. After a restart, Umbilical starts them again in their worktree.</p>
       {d.resumed.map((r) => {
         const s = stateOf(r);

@@ -1,4 +1,4 @@
-//! Keep track of web sessions, and start them again after the server of
+//! Keep track of Remote Control sessions, and start them again after the server of
 //! their folder stopped (see [`crate::resume`]).
 //!
 //! - A new `bridge-cse_<id>` worktree (or transcript) while the server runs
@@ -24,7 +24,7 @@ use crate::resume::{branch_name, find_sessions, worktree_path};
 /// A Mac restart stops the sessions and the daemon at about the same time.
 const END_CONFIRM: Duration = Duration::from_secs(3);
 
-/// The web sessions of one folder.
+/// The Remote Control sessions of one folder.
 #[derive(Default)]
 pub(super) struct Sessions {
     /// Ids seen on disk (also old ones from before), so they are not added again.
@@ -236,7 +236,9 @@ fn add_new(s: &mut Sessions, folder: &Folder, found: BTreeSet<String>, cx: &mut 
             },
         );
         cx.changed = true;
-        cx.logs
-            .push(format!("{}: web session {id} started", folder.name));
+        cx.logs.push(format!(
+            "{}: Remote Control session {id} started",
+            folder.name
+        ));
     }
 }
