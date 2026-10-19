@@ -54,7 +54,8 @@ fn finds_sessions_from_worktrees_and_transcripts() {
         fs::create_dir_all(wt.join(d)).unwrap();
     }
     let projects = tmp.path().join("projects");
-    let base = project_dir_name(&fs::canonicalize(&folder).unwrap());
+    // The plain path is always checked (the real path only on Unix).
+    let base = project_dir_name(&folder);
     for (sub, entry) in [
         ("--claude-worktrees-bridge-cse-B2", "sdk-cli"),
         ("--claude-worktrees-bridge-cse-C3", "claude-desktop"),
