@@ -42,6 +42,7 @@ impl Worker {
             shared,
             last_scan: None,
             trusted: std::collections::HashSet::new(),
+            trusted_at: None,
             trust_error: None,
         };
         worker.log(&format!(
