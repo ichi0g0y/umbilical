@@ -103,7 +103,7 @@ export function LogsCard() {
             mono
             value={config.log_dir}
             placeholder={snapshot.log_dir ? `default: ${snapshot.log_dir}` : "default"}
-            onChange={(v) => edit((c) => void (c.log_dir = v.trim()))}
+            onChange={(v) => edit((c) => void (c.log_dir = v))}
           />
         </Field>
         <Field label="Max log size (MB)">

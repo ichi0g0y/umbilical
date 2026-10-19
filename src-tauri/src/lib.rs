@@ -58,7 +58,15 @@ impl AppState {
                 ..Snapshot::default()
             });
         self.activity.apply(&mut s);
+        s.config_mtime = self.config_mtime();
         s
+    }
+
+    /// When the config file was last changed (unix ms).
+    pub fn config_mtime(&self) -> Option<u64> {
+        let t = std::fs::metadata(&self.config_path).ok()?.modified().ok()?;
+        let d = t.duration_since(std::time::UNIX_EPOCH).ok()?;
+        Some(d.as_millis() as u64)
     }
 }
 
@@ -110,6 +118,7 @@ pub fn run() {
             commands::answer,
             commands::answer_all,
             commands::get_config,
+            commands::config_mtime,
             commands::save_config,
             commands::pick_folder,
             commands::open_path,

@@ -56,6 +56,11 @@ pub fn restart_all(state: State<AppState>) {
 }
 
 #[tauri::command]
+pub fn config_mtime(state: State<AppState>) -> Option<u64> {
+    state.config_mtime()
+}
+
+#[tauri::command]
 pub fn get_config(state: State<AppState>) -> CmdResult<Config> {
     Config::load(&state.config_path).map_err(|e| format!("{e:#}"))
 }

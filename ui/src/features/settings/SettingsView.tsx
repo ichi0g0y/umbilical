@@ -5,7 +5,7 @@ import { MissingFoldersCard, missingOverrideKeys } from "@/features/overrides/Mi
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useConfigActions, useDraftConfig } from "@/hooks/useConfig";
-import { appInfoAtom, dirtyAtom, snapshotAtom } from "@/state/atoms";
+import { appInfoAtom, configLoadErrorAtom, diskChangedAtom, dirtyAtom, snapshotAtom } from "@/state/atoms";
 import { GeneralCard, LogsCard, RestartCard, UpdatesCard } from "./AppCards";
 import { DefaultsCard } from "./DefaultsCard";
 import { TargetsCard } from "./TargetsCard";
@@ -83,7 +83,7 @@ export function SettingsView() {
     !!config,
   );
 
-  if (!config) return <p className="p-6 text-muted-foreground">Loading settings…</p>;
+  if (!config) return <NotLoaded />;
 
   return (
     <div className="flex h-full">
@@ -123,11 +123,41 @@ export function SettingsView() {
   );
 }
 
+/** The config is not loaded yet, or it cannot be read. */
+function NotLoaded() {
+  const error = useAtomValue(configLoadErrorAtom);
+  const info = useAtomValue(appInfoAtom);
+  const { load } = useConfigActions();
+  if (!error) return <p className="p-6 text-muted-foreground">Loading settings…</p>;
+  return (
+    <div className="mx-auto mt-12 flex max-w-lg flex-col gap-3 p-6">
+      <p className="font-medium">The config file cannot be read.</p>
+      <p className="font-mono text-xs break-all text-muted-foreground">{error}</p>
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={() => void load()}>
+          Try again
+        </Button>
+        {info && (
+          <Button variant="outline" onClick={() => api.revealPath(info.config_path)}>
+            Show config file
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SaveBar() {
   const dirty = useAtomValue(dirtyAtom);
+  const diskChanged = useAtomValue(diskChangedAtom);
   const info = useAtomValue(appInfoAtom);
   const { load, save } = useConfigActions();
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  // A new edit makes an old "Saved" message wrong.
+  useEffect(() => {
+    if (dirty) setMsg(null);
+  }, [dirty]);
+  const conflict = dirty && diskChanged;
 
   const onSave = async () => {
     try {
@@ -138,18 +168,16 @@ function SaveBar() {
     }
   };
   const onRevert = async () => {
-    try {
-      await load();
-      setMsg(null);
-    } catch (e) {
-      setMsg({ text: `Cannot read config: ${e}`, error: true });
-    }
+    const config = await load();
+    setMsg(config ? null : { text: "Cannot read the config file. See the message above, or Show config file.", error: true });
   };
 
   return (
     <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
-        <span className={msg?.error ? "flex-1 text-destructive" : "flex-1 text-muted-foreground"}>{msg?.text ?? (dirty ? "Not saved yet." : "")}</span>
+        <span className={msg?.error ? "flex-1 text-destructive" : "flex-1 text-muted-foreground"}>
+          {msg?.text ?? (conflict ? "The config file changed on disk. Save overwrites those changes; Revert loads them." : dirty ? "Not saved yet." : "")}
+        </span>
         {info && (
           <Button variant="outline" onClick={() => api.revealPath(info.config_path)}>
             Show config file
@@ -158,8 +186,8 @@ function SaveBar() {
         <Button variant="outline" onClick={onRevert}>
           Revert
         </Button>
-        <Button disabled={!dirty} onClick={onSave}>
-          Save
+        <Button disabled={!dirty} variant={conflict ? "destructive" : "default"} onClick={onSave}>
+          {conflict ? "Save anyway" : "Save"}
         </Button>
       </div>
     </div>

@@ -11,12 +11,13 @@ import { snapshotAtom } from "@/state/atoms";
 function clean(o: DirOverride): DirOverride | null {
   const out: DirOverride = {};
   if (o.enabled === false) out.enabled = false;
-  if (o.name?.trim()) out.name = o.name.trim();
+  // Keep the text as typed (spaces too). It is trimmed when saved.
+  if (o.name?.trim()) out.name = o.name;
   if (o.permission_mode) out.permission_mode = o.permission_mode;
   if (o.spawn) out.spawn = o.spawn;
   if (o.capacity && o.capacity > 0) out.capacity = o.capacity;
   if (typeof o.skip_first_session === "boolean") out.skip_first_session = o.skip_first_session;
-  if (o.claude_bin?.trim()) out.claude_bin = o.claude_bin.trim();
+  if (o.claude_bin?.trim()) out.claude_bin = o.claude_bin;
   if (Array.isArray(o.extra_args)) out.extra_args = o.extra_args;
   if (o.env && Object.keys(o.env).length) out.env = o.env;
   return Object.keys(out).length ? out : null;

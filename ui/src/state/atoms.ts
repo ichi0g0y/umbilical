@@ -15,6 +15,7 @@ export const emptySnapshot: Snapshot = {
   claude_bin: null,
   needs_setup: false,
   daemon_error: null,
+  config_mtime: null,
 };
 
 export const snapshotAtom = atom<Snapshot>(emptySnapshot);
@@ -35,6 +36,16 @@ export const savedConfigAtom = atom<Config | null>(null);
 export const draftConfigAtom = atom<Config | null>(null);
 /** Changes when the draft is replaced from outside (load, revert): forms reset their text. */
 export const configRevisionAtom = atom(0);
+/** Why the config could not be loaded, or null. */
+export const configLoadErrorAtom = atom<string | null>(null);
+/** The file time when the config was loaded or saved. */
+export const loadedMtimeAtom = atom<number | null>(null);
+/** The file changed on disk after we loaded it (a hand edit, or another app). */
+export const diskChangedAtom = atom((get) => {
+  const now = get(snapshotAtom).config_mtime;
+  const loaded = get(loadedMtimeAtom);
+  return now != null && loaded != null && now !== loaded;
+});
 export const dirtyAtom = atom((get) => {
   const saved = get(savedConfigAtom);
   const draft = get(draftConfigAtom);
