@@ -80,9 +80,18 @@ pub fn app_menu(app: &AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>>
 
     let item =
         |id: &str, text: &str, key: Option<&str>| MenuItem::with_id(app, id, text, true, key);
+    // Greyed out with the reason when this build does not update (like the tray).
+    let off = crate::update::off_reason();
+    let check_update = MenuItem::with_id(
+        app,
+        "check_update",
+        off.unwrap_or("Check for Updates…"),
+        off.is_none(),
+        None::<&str>,
+    )?;
     let main = SubmenuBuilder::new(app, "Umbilical")
         .item(&item("about", "About Umbilical", None)?)
-        .item(&item("check_update", "Check for Updates…", None)?)
+        .item(&check_update)
         .separator()
         .item(&item("open", "Open Umbilical…", Some("CmdOrCtrl+O"))?)
         .item(&item("restart_all", "Restart all", None)?)

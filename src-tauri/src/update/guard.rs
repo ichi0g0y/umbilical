@@ -5,15 +5,27 @@
 use std::path::Path;
 
 /// Why updates are off in this build, or None when they are on.
+///
+/// Only the release and nightly workflows set `UMBILICAL_RELEASE`, so a
+/// local `task build` (a real .app with version 0.1.0) never replaces itself
+/// with a download either.
 pub fn off_reason() -> Option<&'static str> {
     if cfg!(debug_assertions) {
         return Some("Updates are off in dev builds");
     }
-    if cfg!(target_os = "macos") {
-        let exe = std::env::current_exe().ok()?;
-        if !in_app_bundle(&exe) {
-            return Some("Updates are off outside an .app bundle");
-        }
+    if option_env!("UMBILICAL_RELEASE").is_none() {
+        return Some("Updates are off in local builds");
+    }
+    let Ok(exe) = std::env::current_exe() else {
+        return Some("Updates are off: the app path is unknown");
+    };
+    if cfg!(target_os = "macos") && !in_app_bundle(&exe) {
+        return Some("Updates are off outside an .app bundle");
+    }
+    // On Linux the updater can replace only an AppImage (a .deb is updated
+    // with the package manager).
+    if cfg!(target_os = "linux") && std::env::var_os("APPIMAGE").is_none() {
+        return Some("Updates work only in the AppImage");
     }
     None
 }

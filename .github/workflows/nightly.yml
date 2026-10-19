@@ -107,6 +107,8 @@ jobs:
         run: echo '{"version":"${{ needs.prepare.outputs.version }}"}' > src-tauri/tauri.version.json
       - uses: tauri-apps/tauri-action@v0
         env:
+          # Turns the updater on in this build (local builds never update).
+          UMBILICAL_RELEASE: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}

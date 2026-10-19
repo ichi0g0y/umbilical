@@ -9,6 +9,7 @@ use umbilical_core::supervisor::app_log;
 
 use crate::AppState;
 
+mod failed;
 mod guard;
 pub use guard::off_reason;
 
@@ -167,11 +168,21 @@ pub async fn install(app: &AppHandle, force: bool) {
     app_log(&log_dir, "update: stopping the daemon");
     state.daemon.shutdown();
     if let Err(e) = update.install(bytes) {
-        app_log(&log_dir, &format!("update: install failed: {e}"));
-        // The supervisor is gone, so restart to bring the children back.
-    } else {
-        app_log(&log_dir, "update: installed, restarting");
+        // No restart: the same install would fail again after it (a loop
+        // with auto_install). Bring the sessions back and show the error.
+        failed::remember(&update.version);
+        state.daemon.resume();
+        let _ = state.daemon.ensure();
+        fail(
+            app,
+            format!(
+                "install of {} failed: {e}. The sessions run again.",
+                update.version
+            ),
+        );
+        return;
     }
+    app_log(&log_dir, "update: installed, restarting");
     app.restart();
 }
 
@@ -240,8 +251,10 @@ pub fn spawn_checker(app: AppHandle) {
                 }
             };
             if due || channel_changed {
-                if let Ok(Some(_)) = check(&app).await
+                // A version that failed to install is not tried by itself again.
+                if let Ok(Some(a)) = check(&app).await
                     && config.auto_install
+                    && !failed::failed_before(&a.version)
                 {
                     install(&app, false).await;
                 }
