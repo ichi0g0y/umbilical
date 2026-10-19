@@ -213,6 +213,8 @@ struct Worker {
     last_scan: Option<Instant>,
     /// Paths already marked as trusted (so we do not read the file every scan).
     trusted: std::collections::HashSet<PathBuf>,
+    /// When `trusted` was filled. It is cleared after a while to check again.
+    trusted_at: Option<Instant>,
     trust_error: Option<String>,
 }
 
