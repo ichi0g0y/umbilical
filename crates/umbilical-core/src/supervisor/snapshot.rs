@@ -55,6 +55,8 @@ impl Worker {
             config_path: self.config_path.to_string_lossy().into_owned(),
             config_error: self.config_error.clone(),
             config_held: self.config_held,
+            // The GUI fills it in.
+            config_mtime: None,
             log_dir: log_dir.to_string_lossy().into_owned(),
             claude_bin: find_claude(&self.config.claude_bin, &self.path_var)
                 .map(|p| p.to_string_lossy().into_owned()),
