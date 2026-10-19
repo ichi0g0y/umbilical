@@ -42,6 +42,14 @@ impl Worker {
                     effective_spawn: e.target.settings.effective_spawn.clone(),
                     log_path: self.log_path_for(key).to_string_lossy().into_owned(),
                     busy: 0,
+                    kept_sessions: self.store.sessions(key).len(),
+                    resumed: e
+                        .sessions
+                        .children
+                        .iter()
+                        .map(|(id, c)| c.status(id, &self.log_path_for(key)))
+                        .collect(),
+                    resume_note: e.sessions.note.clone(),
                 }
             })
             .collect();

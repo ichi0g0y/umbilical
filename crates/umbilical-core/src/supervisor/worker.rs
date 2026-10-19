@@ -10,6 +10,7 @@ use super::{Command, STOP_GRACE, Shared, TICK, Worker, app_log, mtime};
 use crate::child::{Proc, stop_all};
 use crate::config::Config;
 use crate::env::child_path;
+use crate::resume::store::SessionStore;
 
 impl Worker {
     pub(super) fn new(config_path: PathBuf, shared: Arc<Shared>) -> Self {
@@ -30,6 +31,11 @@ impl Worker {
                 Err(e) => (Config::inert(), Some(format!("{e:#}"))),
             }
         };
+        let store_path = SessionStore::path_next_to(&config_path);
+        let (store, store_error) = match SessionStore::load(&store_path) {
+            Ok(s) => (s, None),
+            Err(e) => (SessionStore::default(), Some(format!("{e:#}"))),
+        };
         let worker = Self {
             config_held: config_error.is_some(),
             needs_setup,
@@ -44,6 +50,9 @@ impl Worker {
             trusted: std::collections::HashSet::new(),
             trusted_at: None,
             trust_error: None,
+            store,
+            store_path,
+            last_session_scan: None,
         };
         worker.log(&format!(
             "supervisor started (config {})",
@@ -51,6 +60,9 @@ impl Worker {
         ));
         if let Some(e) = &worker.config_error {
             worker.log(&format!("config error: {e}"));
+        }
+        if let Some(e) = store_error {
+            worker.log(&format!("sessions file error, starting empty: {e}"));
         }
         worker
     }
@@ -86,6 +98,7 @@ impl Worker {
             self.last_scan = Some(Instant::now());
         }
         self.check_children();
+        self.check_sessions();
         self.publish();
     }
 
@@ -102,11 +115,11 @@ impl Worker {
 
     pub(super) fn shutdown(&mut self) {
         self.log("shutting down, stopping all children");
-        let procs: Vec<Proc> = self
-            .entries
-            .values_mut()
-            .filter_map(|e| e.proc.take())
-            .collect();
+        let mut procs: Vec<Proc> = Vec::new();
+        for e in self.entries.values_mut() {
+            procs.extend(e.proc.take());
+            procs.extend(super::resume::take_children(e));
+        }
         stop_all(procs, STOP_GRACE);
         self.publish();
         self.log("stopped");

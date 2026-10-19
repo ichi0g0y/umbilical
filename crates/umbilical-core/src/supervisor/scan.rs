@@ -60,6 +60,7 @@ impl Worker {
             if let Some(mut e) = self.entries.remove(&key) {
                 self.log(&format!("{}: directory removed, stopping", e.target.name));
                 to_stop.extend(e.proc.take());
+                to_stop.extend(super::resume::take_children(&mut e));
                 self.shared.outputs.lock().unwrap().remove(&key);
             }
         }
@@ -92,6 +93,7 @@ impl Worker {
                             last_attention: None,
                             last_exit: None,
                             last_error: None,
+                            sessions: Default::default(),
                         },
                     );
                 }

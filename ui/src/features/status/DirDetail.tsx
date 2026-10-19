@@ -7,6 +7,7 @@ import { api, type DirAction, type DirStatus } from "@/lib/api";
 import { stateText } from "@/lib/format";
 import { AttentionNote } from "./AttentionNote";
 import { LogView } from "./LogView";
+import { ResumedSessions } from "./ResumedSessions";
 
 function ActionButton({
   action,
@@ -116,6 +117,8 @@ export function DirDetail({ dir: d }: { dir: DirStatus }) {
           </Fact>
         </dl>
       </details>
+
+      <ResumedSessions dir={d} />
 
       <h3 className="font-semibold">Output</h3>
       <LogView dirKey={d.key} />
