@@ -35,6 +35,8 @@ Later updates are downloaded by the app itself, so they should not show these wa
 
 Sessions run inside Umbilical, so macOS uses Umbilical's permissions for them (Accessibility, Screen Recording, and so on). Open the **Permissions** tab to see them and allow what your sessions need. Then click **Restart all**.
 
+**Developer Tools** is optional. With it, programs that sessions start skip the Gatekeeper check, so new builds and tests start faster. But programs from the internet also skip the check, so add it only if you need the speed.
+
 The macOS builds are signed with our own (self-signed) certificate. It is the same for every version, so macOS keeps the permissions after an update. (Builds before 0.1.3 used another signature or app ID. After you update from them, allow the permissions once more.)
 
 ## Before the first start
