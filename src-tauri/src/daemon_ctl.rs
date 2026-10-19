@@ -9,6 +9,8 @@ use std::time::{Duration, Instant};
 use serde::de::DeserializeOwned;
 use umbilical_core::daemon::{Client, Paths, Request, mtime_secs};
 
+const STOPPED: &str = "the Umbilical daemon is stopped";
+
 pub struct DaemonCtl {
     paths: Paths,
     client: Mutex<Option<Client>>,
@@ -18,6 +20,9 @@ pub struct DaemonCtl {
     hold: AtomicBool,
     /// We use an old daemon and replace it when nothing works.
     outdated: AtomicBool,
+    /// Set by `shutdown`: start no daemon (the status loop would start one
+    /// again at once, while the app quits or an update replaces the files).
+    suspended: AtomicBool,
 }
 
 impl DaemonCtl {
@@ -28,10 +33,14 @@ impl DaemonCtl {
             starting: Mutex::new(()),
             hold: AtomicBool::new(false),
             outdated: AtomicBool::new(false),
+            suspended: AtomicBool::new(false),
         }
     }
 
     pub fn call<T: DeserializeOwned>(&self, request: &Request) -> Result<T, String> {
+        if self.suspended.load(Ordering::Relaxed) {
+            return Err(STOPPED.into());
+        }
         let cached = self.client.lock().unwrap().clone();
         if let Some(c) = cached
             && let Ok(v) = c.call(request)
@@ -55,7 +64,10 @@ impl DaemonCtl {
     /// An old daemon is kept because sessions were working. Replace it once they stop.
     /// Returns true when it was replaced.
     pub fn replace_if_outdated(&self) -> bool {
-        if !self.outdated.load(Ordering::Relaxed) || self.hold.load(Ordering::Relaxed) {
+        if !self.outdated.load(Ordering::Relaxed)
+            || self.hold.load(Ordering::Relaxed)
+            || self.suspended.load(Ordering::Relaxed)
+        {
             return false;
         }
         self.outdated.store(false, Ordering::Relaxed);
@@ -63,8 +75,10 @@ impl DaemonCtl {
         self.ensure().is_ok()
     }
 
-    /// Stop every session and the daemon.
+    /// Stop every session and the daemon. No daemon starts again until `resume`.
     pub fn shutdown(&self) {
+        self.suspended.store(true, Ordering::Relaxed);
+        let _guard = self.starting.lock().unwrap();
         let cached = self.client.lock().unwrap().take();
         let client = cached.or_else(|| Client::connect(&self.paths).ok());
         if let Some(c) = client {
@@ -72,9 +86,17 @@ impl DaemonCtl {
         }
     }
 
+    /// Start daemons again after `shutdown` (an update that did not install).
+    pub fn resume(&self) {
+        self.suspended.store(false, Ordering::Relaxed);
+    }
+
     /// Connect to a daemon that runs our binary, or start one.
     pub fn ensure(&self) -> Result<Client, String> {
         let _guard = self.starting.lock().unwrap();
+        if self.suspended.load(Ordering::Relaxed) {
+            return Err(STOPPED.into());
+        }
         let exe = std::env::current_exe().map_err(|e| e.to_string())?;
         if let Ok(c) = Client::connect(&self.paths) {
             if is_current(&c, &exe) {
