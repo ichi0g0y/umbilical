@@ -1,11 +1,17 @@
 //! Is a Claude session working right now?
 //!
 //! Claude Code writes every session to a transcript file:
-//! `~/.claude/projects/<folder>/<session>.jsonl`. Sessions in worktrees of the
-//! folder (spawn mode `worktree`) use `<folder>--claude-worktrees-<name>`.
+//! `~/.claude/projects/<folder>/<session>.jsonl`. Sessions that
+//! `claude remote-control` makes in worktrees (spawn mode `worktree`) use
+//! `<folder>--claude-worktrees-bridge-<id>`.
 //! The last message of a transcript tells if a turn is still running:
 //! an answer from Claude that ends the turn means "idle", anything else
 //! (a tool call, a tool result, a new prompt) means "working".
+//!
+//! Only sessions of `claude remote-control` count: their entries say
+//! `"entrypoint": "sdk-cli"`. A Claude Desktop (`claude-desktop`) or terminal
+//! session in the same folder is not stopped by a restart, so it must not hold
+//! an update back.
 
 use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
@@ -17,6 +23,9 @@ use serde_json::Value;
 /// Transcripts not written for this long are idle, whatever they say.
 /// A session that crashed in the middle of a turn must not block forever.
 pub const STALE_AFTER: Duration = Duration::from_secs(30 * 60);
+
+/// The `entrypoint` of sessions that `claude remote-control` starts.
+const REMOTE_CONTROL_ENTRYPOINT: &str = "sdk-cli";
 
 /// Only the end of a transcript is read. One line can be big (tool output).
 const TAIL_BYTES: u64 = 512 * 1024;
@@ -41,8 +50,14 @@ pub fn project_dir_name(path: &Path) -> String {
 
 /// How many sessions of the folder `dir` are working now.
 pub fn busy_sessions(projects: &Path, dir: &Path, now: SystemTime) -> usize {
-    let base = project_dir_name(dir);
-    let worktrees = format!("{base}--claude-worktrees-");
+    // claude runs in the real path, so a symlinked target has the real name.
+    let mut bases = vec![project_dir_name(dir)];
+    if let Ok(real) = fs::canonicalize(dir) {
+        let name = project_dir_name(&real);
+        if !bases.contains(&name) {
+            bases.push(name);
+        }
+    }
     let Ok(entries) = fs::read_dir(projects) else {
         return 0;
     };
@@ -50,7 +65,12 @@ pub fn busy_sessions(projects: &Path, dir: &Path, now: SystemTime) -> usize {
         .flatten()
         .filter(|e| {
             let name = e.file_name().to_string_lossy().into_owned();
-            name == base || name.starts_with(&worktrees)
+            bases.iter().any(|base| {
+                name == *base
+                    || name
+                        .strip_prefix(base.as_str())
+                        .is_some_and(|rest| rest.starts_with("--claude-worktrees-bridge-"))
+            })
         })
         .map(|e| busy_in_project(&e.path(), now))
         .sum()
@@ -93,7 +113,17 @@ fn last_turn_state(transcript: &Path) -> Option<bool> {
     text.lines()
         .rev()
         .filter_map(|line| serde_json::from_str::<Value>(line).ok())
-        .find_map(|entry| message_state(&entry))
+        // The last message decides. A session that is not ours is never working.
+        .find_map(|entry| message_state(&entry).map(|working| working && is_remote_control(&entry)))
+}
+
+/// Was this entry written by a `claude remote-control` session? Entries
+/// without an `entrypoint` (older Claude Code) count, to stay on the safe side.
+fn is_remote_control(entry: &Value) -> bool {
+    entry
+        .get("entrypoint")
+        .and_then(Value::as_str)
+        .is_none_or(|e| e == REMOTE_CONTROL_ENTRYPOINT)
 }
 
 fn message_state(entry: &Value) -> Option<bool> {
@@ -184,6 +214,19 @@ mod tests {
     }
 
     #[test]
+    fn other_sessions_do_not_count() {
+        let tmp = tempfile::tempdir().unwrap();
+        let now = SystemTime::now();
+        let desktop = r#"{"type":"assistant","entrypoint":"claude-desktop","message":{"stop_reason":"tool_use"}}"#;
+        let terminal = r#"{"type":"user","entrypoint":"cli","message":{"content":"hi"}}"#;
+        let remote =
+            r#"{"type":"assistant","entrypoint":"sdk-cli","message":{"stop_reason":"tool_use"}}"#;
+        assert!(!is_working(&write(tmp.path(), "d.jsonl", &[desktop]), now));
+        assert!(!is_working(&write(tmp.path(), "t.jsonl", &[terminal]), now));
+        assert!(is_working(&write(tmp.path(), "r.jsonl", &[remote]), now));
+    }
+
+    #[test]
     fn counts_the_folder_and_its_worktrees() {
         let tmp = tempfile::tempdir().unwrap();
         let dir = Path::new("/w/robco");
@@ -193,6 +236,8 @@ mod tests {
             ("-w-robco--claude-worktrees-bridge-cse-2", vec![END_TURN]),
             // Another folder whose name starts the same way.
             ("-w-robco-wt", vec![TOOL_USE]),
+            // A worktree of the Claude Desktop app, not of remote-control.
+            ("-w-robco--claude-worktrees-brave-meitner-1", vec![TOOL_USE]),
         ] {
             let d = tmp.path().join(sub);
             fs::create_dir_all(&d).unwrap();
