@@ -103,6 +103,18 @@ spawn = "same-dir"
 name = "nex-main"
 ```
 
+## Uninstall
+
+- **macOS / Linux**: choose **Uninstall Umbilical…** in the tray menu (on macOS also in the Umbilical app menu), or click it in **Settings > Uninstall** in the window. It stops every session and the daemon, turns off start at login, and quits. On macOS it also moves Umbilical.app to the Trash. On Linux, remove the package or the AppImage yourself. Pick **Uninstall and Delete Settings** to also delete `~/.umbilical`, the log folder and the window data (folders named `sh.ich.umbilical`).
+- **Windows**: uninstall Umbilical in **Settings > Apps** (Windows settings), or click **Uninstall Umbilical…** in **Settings > Uninstall** in the window. The uninstaller stops the sessions and the daemon and removes start at login. Check **Delete the application data** to also delete `%USERPROFILE%\.umbilical` and `%LOCALAPPDATA%\Umbilical\logs`.
+
+Your folders and repositories stay. In `~/.umbilical` only Umbilical's own files are deleted, so repositories in `~/.umbilical/repos` stay too. A `log_dir` from the config keeps its other files.
+
+These are not removed:
+
+- **macOS privacy permissions**: remove Umbilical in **System Settings > Privacy & Security**, or run `tccutil reset All sh.ich.umbilical`.
+- **Remote Control worktrees** in your project folders (`.claude/worktrees/bridge-*`): remove them with `git worktree remove <path>` when you do not need them.
+
 ## Development
 
 Tools: Rust (stable), [Bun](https://bun.sh), and optionally [Task](https://taskfile.dev).

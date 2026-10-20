@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useConfigActions, useDraftConfig } from "@/hooks/useConfig";
 import { appInfoAtom, configLoadErrorAtom, diskChangedAtom, dirtyAtom, snapshotAtom } from "@/state/atoms";
 import { AppearanceCard, GeneralCard, LogsCard, RestartCard, UpdatesCard } from "./AppCards";
+import { UninstallCard } from "./UninstallCard";
 import { DefaultsCard } from "./DefaultsCard";
 import { TargetsCard } from "./TargetsCard";
 
@@ -31,6 +32,7 @@ function groupsFor(missing: boolean) {
         { id: "appearance", title: "Appearance" },
         { id: "updates", title: "Updates" },
         { id: "logs", title: "Logs" },
+        { id: "uninstall", title: "Uninstall" },
       ],
     },
   ];
@@ -118,6 +120,7 @@ export function SettingsView() {
           <AppearanceCard />
           <UpdatesCard />
           <LogsCard />
+          <UninstallCard />
         </div>
         <SaveBar />
       </div>

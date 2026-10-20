@@ -193,6 +193,7 @@ export const api = {
   answerAll: (attention: Attention, text: string) => invoke<void>("answer_all", { attention, text }),
   restartAll: () => invoke<void>("restart_all"),
   restartDaemon: () => invoke<void>("restart_daemon"),
+  uninstall: () => invoke<void>("uninstall"),
   getConfig: () => invoke<Config>("get_config"),
   configMtime: () => invoke<number | null>("config_mtime"),
   saveConfig: (config: Config) => invoke<void>("save_config", { config }),
