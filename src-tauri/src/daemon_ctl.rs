@@ -4,7 +4,7 @@ use std::path::Path;
 #[cfg(not(target_os = "macos"))]
 use std::process::{Command, Stdio};
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 use serde::de::DeserializeOwned;
@@ -24,6 +24,8 @@ pub struct DaemonCtl {
     /// Set by `shutdown`: start no daemon (the status loop would start one
     /// again at once, while the app quits or an update replaces the files).
     suspended: AtomicBool,
+    /// Counts `shutdown` calls, so a late `resume_after` can see a newer one.
+    shutdowns: AtomicU64,
 }
 
 impl DaemonCtl {
@@ -35,6 +37,7 @@ impl DaemonCtl {
             hold: AtomicBool::new(false),
             outdated: AtomicBool::new(false),
             suspended: AtomicBool::new(false),
+            shutdowns: AtomicU64::new(0),
         }
     }
 
@@ -77,14 +80,17 @@ impl DaemonCtl {
     }
 
     /// Stop every session and the daemon. No daemon starts again until `resume`.
-    pub fn shutdown(&self) {
+    /// Returns a number for `resume_after`.
+    pub fn shutdown(&self) -> u64 {
         self.suspended.store(true, Ordering::Relaxed);
+        let id = self.shutdowns.fetch_add(1, Ordering::SeqCst) + 1;
         let _guard = self.starting.lock().unwrap();
         let cached = self.client.lock().unwrap().take();
         let client = cached.or_else(|| Client::connect(&self.paths).ok());
         if let Some(c) = client {
             let _ = c.call::<serde_json::Value>(&Request::Shutdown);
         }
+        id
     }
 
     /// Stop the daemon with every session and start a new one. macOS gives
@@ -108,6 +114,16 @@ impl DaemonCtl {
     /// Start daemons again after `shutdown` (an update that did not install).
     pub fn resume(&self) {
         self.suspended.store(false, Ordering::Relaxed);
+    }
+
+    /// `resume`, but only if no other `shutdown` came after the one that
+    /// returned `id` (for example a second power off, or an update).
+    pub fn resume_after(&self, id: u64) -> bool {
+        if self.shutdowns.load(Ordering::SeqCst) != id {
+            return false;
+        }
+        self.resume();
+        true
     }
 
     /// Connect to a daemon that runs our binary, or start one.

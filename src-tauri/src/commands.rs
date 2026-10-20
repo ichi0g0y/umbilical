@@ -82,7 +82,7 @@ pub fn save_config(app: AppHandle, state: State<AppState>, config: Config) -> Cm
         let _ = std::fs::create_dir_all(umbilical_core::config::expand_home(root));
     }
     state.daemon.send(Request::Reload);
-    crate::sync_autostart(&app, config.autostart);
+    crate::autostart::sync(&app, config.autostart);
     crate::presence::apply(&app, crate::presence::ShowIn::parse(&config.show_in));
     crate::tray::set_show_count(config.tray_count);
     Ok(())
@@ -186,7 +186,7 @@ pub fn complete_setup(
         .save(&state.config_path)
         .map_err(|e| format!("{e:#}"))?;
     state.daemon.send(Request::Reload);
-    crate::sync_autostart(&app, autostart);
+    crate::autostart::sync(&app, autostart);
     Ok(())
 }
 

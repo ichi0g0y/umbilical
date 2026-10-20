@@ -31,7 +31,7 @@ pub fn off_reason() -> Option<&'static str> {
 }
 
 /// Is `exe` at `*.app/Contents/MacOS/<exe>`?
-fn in_app_bundle(exe: &Path) -> bool {
+pub fn in_app_bundle(exe: &Path) -> bool {
     let macos = exe.parent();
     let contents = macos.and_then(Path::parent);
     let app = contents.and_then(Path::parent);
