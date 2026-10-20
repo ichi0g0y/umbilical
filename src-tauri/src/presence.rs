@@ -107,6 +107,8 @@ pub fn app_menu(app: &AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>>
             Some("CmdOrCtrl+Q"),
         )?)
         .item(&item("quit_all", "Stop all sessions and quit", None)?)
+        .separator()
+        .item(&item("uninstall", "Uninstall Umbilical…", None)?)
         .build()?;
     // Copy and paste in the window need the Edit menu.
     let edit = SubmenuBuilder::new(app, "Edit")

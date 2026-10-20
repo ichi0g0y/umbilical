@@ -40,6 +40,28 @@ pub fn sync(app: &tauri::AppHandle, want: bool) {
     }
 }
 
+/// Turn start at login off for good (uninstall). Any build may do this.
+/// Windows uses the uninstaller instead (`windows/hooks.nsh`).
+#[cfg(not(windows))]
+pub fn remove(app: &tauri::AppHandle) -> Result<(), String> {
+    let launcher = app.autolaunch();
+    if launcher.is_enabled().unwrap_or(true) {
+        launcher.disable().map_err(|e| e.to_string())?;
+    }
+    // `disable` removes the LaunchAgent. Make sure that it is gone.
+    #[cfg(target_os = "macos")]
+    {
+        let plist = launch_agent(app);
+        match std::fs::remove_file(&plist) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                return Err(format!("remove {}: {e}", plist.display()));
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
 fn log(app: &tauri::AppHandle, msg: &str) {
     let state = app.state::<AppState>();
     app_log(&state.config().log_dir(), msg);
@@ -52,11 +74,16 @@ fn launch_agents_dir() -> std::path::PathBuf {
         .join("LaunchAgents")
 }
 
+/// The file that the plugin writes.
+#[cfg(target_os = "macos")]
+fn launch_agent(app: &tauri::AppHandle) -> std::path::PathBuf {
+    launch_agents_dir().join(format!("{}.plist", app.package_info().name))
+}
+
 /// Does the LaunchAgent start an exe other than this one?
 #[cfg(target_os = "macos")]
 fn starts_other_exe(app: &tauri::AppHandle) -> bool {
-    let plist = launch_agents_dir().join(format!("{}.plist", app.package_info().name));
-    let Ok(text) = std::fs::read_to_string(plist) else {
+    let Ok(text) = std::fs::read_to_string(launch_agent(app)) else {
         return false;
     };
     // The plugin writes the canonical exe path as the first program argument.

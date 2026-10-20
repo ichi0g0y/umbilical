@@ -132,7 +132,7 @@ async fn do_check(app: &AppHandle, channel: &str) -> Result<Option<Update>, Stri
 /// Without `force`, first wait until no session is working: the restart cuts
 /// the turn that is running.
 pub async fn install(app: &AppHandle, force: bool) {
-    if off_reason().is_some() {
+    if off_reason().is_some() || crate::uninstall::started() {
         return;
     }
     if !force && !wait_until_idle(app).await {
@@ -167,6 +167,11 @@ pub async fn install(app: &AppHandle, force: bool) {
     // installer may end this process right away.
     // The daemon runs the same binary. Stop it (and the sessions) so the
     // installer can replace the file. The new GUI starts a new daemon.
+    // An uninstall started during the download: do not put the app back.
+    if crate::uninstall::started() {
+        state.update.lock().unwrap().installing = false;
+        return;
+    }
     app_log(&log_dir, "update: stopping the daemon");
     state.daemon.shutdown();
     if let Err(e) = update.install(bytes) {

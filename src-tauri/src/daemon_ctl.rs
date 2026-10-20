@@ -26,6 +26,8 @@ pub struct DaemonCtl {
     suspended: AtomicBool,
     /// Counts `shutdown` calls, so a late `resume_after` can see a newer one.
     shutdowns: AtomicU64,
+    /// Set by `retire` (uninstall): `resume` does nothing any more.
+    retired: AtomicBool,
 }
 
 impl DaemonCtl {
@@ -38,6 +40,7 @@ impl DaemonCtl {
             outdated: AtomicBool::new(false),
             suspended: AtomicBool::new(false),
             shutdowns: AtomicU64::new(0),
+            retired: AtomicBool::new(false),
         }
     }
 
@@ -111,9 +114,18 @@ impl DaemonCtl {
         self.ensure().map(|_| ())
     }
 
+    /// `shutdown` for good: no daemon starts again in this process (uninstall).
+    #[cfg(not(windows))]
+    pub fn retire(&self) {
+        self.retired.store(true, Ordering::SeqCst);
+        self.shutdown();
+    }
+
     /// Start daemons again after `shutdown` (an update that did not install).
     pub fn resume(&self) {
-        self.suspended.store(false, Ordering::Relaxed);
+        if !self.retired.load(Ordering::SeqCst) {
+            self.suspended.store(false, Ordering::Relaxed);
+        }
     }
 
     /// `resume`, but only if no other `shutdown` came after the one that

@@ -17,6 +17,7 @@ mod presence;
 #[cfg(target_os = "macos")]
 mod spawn_mac;
 mod tray;
+mod uninstall;
 mod update;
 
 use std::path::PathBuf;
@@ -84,6 +85,16 @@ pub fn is_permission_states_run() -> bool {
     std::env::args().any(|a| a == permissions::STATES_FLAG)
 }
 
+/// `umbilical --stop-daemon`: stop every session and the daemon. The Windows
+/// uninstaller runs it. false: the daemon still runs.
+pub fn stop_daemon() -> bool {
+    uninstall::stop_daemon()
+}
+
+pub fn is_stop_daemon_run() -> bool {
+    std::env::args().any(|a| a == uninstall::STOP_DAEMON_FLAG)
+}
+
 pub fn run() {
     let config_path = Config::default_path();
     // No config file means first start: the window asks for the root folder,
@@ -121,6 +132,7 @@ pub fn run() {
             commands::dir_action,
             commands::restart_all,
             commands::restart_daemon,
+            commands::uninstall,
             commands::answer,
             commands::answer_all,
             commands::get_config,
@@ -243,6 +255,8 @@ pub fn run() {
         // A click on the Dock icon.
         #[cfg(target_os = "macos")]
         RunEvent::Reopen { .. } => show_window(app),
+        // After an uninstall a log line would make the deleted log folder again.
+        RunEvent::Exit if uninstall::started() => {}
         RunEvent::Exit => {
             // The daemon and the sessions keep running.
             let state = app.state::<AppState>();

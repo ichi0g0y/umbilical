@@ -12,6 +12,11 @@ fn main() {
         }
         return;
     }
+    // `--stop-daemon`: stop every session and the daemon (the Windows uninstaller).
+    if umbilical_app::is_stop_daemon_run() {
+        let stopped = umbilical_app::stop_daemon();
+        std::process::exit(if stopped { 0 } else { 1 });
+    }
     // `--permission-states`: print the macOS permission states for the GUI.
     if umbilical_app::is_permission_states_run() {
         umbilical_app::print_permission_states();

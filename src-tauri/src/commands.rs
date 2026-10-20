@@ -63,6 +63,20 @@ pub async fn restart_daemon(app: AppHandle) -> CmdResult<()> {
         .map_err(|e| e.to_string())?
 }
 
+/// "Uninstall Umbilical…" in Settings: the same flow as the menu item.
+/// On Windows it starts the uninstaller.
+#[tauri::command]
+pub fn uninstall(app: AppHandle) -> CmdResult<()> {
+    #[cfg(not(windows))]
+    crate::uninstall::start(&app);
+    #[cfg(windows)]
+    {
+        let _ = app;
+        crate::uninstall::start_windows_uninstaller()?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn config_mtime(state: State<AppState>) -> Option<u64> {
     state.config_mtime()
@@ -75,6 +89,9 @@ pub fn get_config(state: State<AppState>) -> CmdResult<Config> {
 
 #[tauri::command]
 pub fn save_config(app: AppHandle, state: State<AppState>, config: Config) -> CmdResult<()> {
+    if crate::uninstall::started() {
+        return Err(crate::uninstall::BUSY.into());
+    }
     config
         .save(&state.config_path)
         .map_err(|e| format!("{e:#}"))?;
@@ -171,6 +188,9 @@ pub fn complete_setup(
     root: String,
     autostart: bool,
 ) -> CmdResult<()> {
+    if crate::uninstall::started() {
+        return Err(crate::uninstall::BUSY.into());
+    }
     let root = root.trim().to_string();
     if root.is_empty() {
         return Err("choose a folder".into());
