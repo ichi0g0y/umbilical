@@ -35,7 +35,7 @@ const TICK: Duration = Duration::from_millis(500);
 const STOP_GRACE: Duration = Duration::from_secs(3);
 /// Retry this often while an old registration still holds the folder.
 /// The server drops it after a few minutes; a growing backoff would wait too long.
-const ALREADY_SERVED_RETRY: Duration = Duration::from_secs(30);
+const ALREADY_SERVED_RETRY: Duration = Duration::from_secs(15);
 
 #[derive(Debug)]
 pub enum Command {

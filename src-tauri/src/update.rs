@@ -11,7 +11,7 @@ use crate::AppState;
 
 mod failed;
 mod guard;
-pub use guard::off_reason;
+pub use guard::{in_app_bundle, off_reason};
 
 const REPO: &str = "https://github.com/ichi0g0y/umbilical";
 

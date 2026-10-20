@@ -4,12 +4,15 @@
 //! Quitting the GUI does not stop them.
 
 mod activity;
+mod autostart;
 mod commands;
 mod daemon_ctl;
 mod login;
 mod permissions;
 #[cfg(target_os = "macos")]
 mod permissions_ffi;
+#[cfg(target_os = "macos")]
+mod power_mac;
 mod presence;
 #[cfg(target_os = "macos")]
 mod spawn_mac;
@@ -21,7 +24,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
-use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
+use tauri_plugin_autostart::MacosLauncher;
 use umbilical_core::daemon::Request;
 use umbilical_core::supervisor::app_log;
 use umbilical_core::{Config, Snapshot};
@@ -155,9 +158,11 @@ pub fn run() {
             }
 
             if let Some(config) = &config {
-                sync_autostart(app.handle(), config.autostart);
+                autostart::sync(app.handle(), config.autostart);
             }
             tray::create(app.handle())?;
+            #[cfg(target_os = "macos")]
+            power_mac::watch(app.handle());
             tray::set_show_count(config.as_ref().is_some_and(|c| c.tray_count));
             presence::apply(app.handle(), show_in);
 
@@ -255,29 +260,4 @@ pub fn show_window(app: &tauri::AppHandle) {
     }
     #[cfg(target_os = "macos")]
     let _ = app.show();
-}
-
-pub fn sync_autostart(app: &tauri::AppHandle, want: bool) {
-    // In dev builds, do not register the debug binary for login.
-    if cfg!(debug_assertions) {
-        return;
-    }
-    // The LaunchAgent is written here, and the folder may not exist yet.
-    #[cfg(target_os = "macos")]
-    let _ = std::fs::create_dir_all(
-        umbilical_core::config::home()
-            .join("Library")
-            .join("LaunchAgents"),
-    );
-    let launcher = app.autolaunch();
-    let now = launcher.is_enabled().unwrap_or(false);
-    let result = match (want, now) {
-        (true, false) => launcher.enable(),
-        (false, true) => launcher.disable(),
-        _ => Ok(()),
-    };
-    if let Err(e) = result {
-        let state = app.state::<AppState>();
-        app_log(&state.config().log_dir(), &format!("autostart: {e}"));
-    }
 }
