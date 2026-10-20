@@ -11,7 +11,9 @@ use crate::AppState;
 
 mod failed;
 mod guard;
-pub use guard::{in_app_bundle, off_reason};
+#[cfg(target_os = "macos")]
+pub use guard::in_app_bundle;
+pub use guard::off_reason;
 
 const REPO: &str = "https://github.com/ichi0g0y/umbilical";
 
